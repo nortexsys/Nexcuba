@@ -1,0 +1,41 @@
+# === Nexcuba · gitignore ===
+# Regla del proyecto: docs/ es material local de referencia, NUNCA se comitea.
+docs/
+
+# Secretos y accesos — jamás en el repositorio.
+.env
+.env.*
+*.pem
+*.key
+secrets/
+
+# Documentos binarios de trabajo local (el .md es la fuente canónica).
+*.docx
+*.pptx
+
+# Dependencias y build (fase de construcción)
+node_modules/
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+# Tests y cobertura
+coverage/
+.nyc_output/
+
+# Sistema y editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS temporal
+~$*
