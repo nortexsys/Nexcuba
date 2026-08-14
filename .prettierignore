@@ -1,0 +1,11 @@
+# PO-facing documents keep their authored formatting (no churn on spec diffs)
+*.md
+openspec/**
+
+# Reference material
+docs/
+
+# Generated / assets
+public/*.png
+src/app/icon.png
+coverage/
