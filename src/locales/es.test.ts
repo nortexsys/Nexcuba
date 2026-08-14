@@ -21,4 +21,9 @@ describe('locale es (contractual strings)', () => {
     expect(es.common.resultsCount(1)).toBe('1 resultado');
     expect(es.common.resultsCount(5)).toBe('5 resultados');
   });
+
+  it('pluralizes pending applications for the backoffice', () => {
+    expect(es.auth.admin.pendingApplications(1)).toBe('1 solicitud pendiente de revisión');
+    expect(es.auth.admin.pendingApplications(3)).toBe('3 solicitudes pendientes de revisión');
+  });
 });

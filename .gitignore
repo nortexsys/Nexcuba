@@ -25,6 +25,9 @@ next-env.d.ts
 # Tests y cobertura
 coverage/
 .nyc_output/
+test-results/
+playwright-report/
+blob-report/
 
 # Sistema y editores
 .DS_Store

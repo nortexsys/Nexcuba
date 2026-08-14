@@ -7,10 +7,10 @@ scaffolding. Do not skip ahead.
 
 ## H1 · Scaffolding & tooling
 
-- [ ] 1.1 Scaffold Next.js 15 App Router + TypeScript strict (`noUncheckedIndexedAccess`, `strict`), ESLint, Prettier, Vitest + Testing Library + Playwright wired, CI workflow (lint, typecheck, tests, coverage ≥90% gate)
-- [ ] 1.2 Tailwind design tokens from `design-spec.md` (Plus Jakarta Sans via `next/font`, ink/gold/cream scales, radius-16 cards, pill buttons) + base components (`Button`, `Card`, `Badge`, `Chip`, `ViewToggle`, `DataTable`) with unit tests + visual smoke (Playwright screenshots) — dual list view per spec `public-directory` (cards default desktop/tablet, table default mobile)
-- [ ] 1.3 App shell: sticky header (nav + login/register pill buttons), global search bar container below nav (centered, placeholder «Búsqueda general en nexcuba.org» — wiring in 7.x), cream footer with 4 columns; error/not-found/loading primitives
-- [ ] 1.4 Supabase client wiring: typed client factory (browser anon / server anon / server service-role), zod env schema, lint rule + CI check that service-role never reaches client bundles
+- [x] 1.1 Scaffold Next.js 15 App Router + TypeScript strict (`noUncheckedIndexedAccess`, `strict`), ESLint, Prettier, Vitest + Testing Library + Playwright wired, CI workflow (lint, typecheck, tests, coverage ≥90% gate)
+- [x] 1.2 Tailwind design tokens from `design-spec.md` (Plus Jakarta Sans via `next/font`, ink/gold/cream scales, radius-16 cards, pill buttons) + base components (`Button`, `Card`, `Badge`, `Chip`, `ViewToggle`, `DataTable`) with unit tests + visual smoke (Playwright screenshots) — dual list view per spec `public-directory` (cards default desktop/tablet, table default mobile)
+- [x] 1.3 App shell: sticky header (nav + login/register pill buttons), global search bar container below nav (centered, placeholder «Búsqueda general en nexcuba.org» — wiring in 7.x), cream footer with 4 columns; error/not-found/loading primitives
+- [x] 1.4 Supabase client wiring: typed client factory (browser anon / server anon / server service-role), zod env schema, lint rule + CI check that service-role never reaches client bundles
 
 ## H2 · Data foundation
 
@@ -24,11 +24,11 @@ scaffolding. Do not skip ahead.
 
 ## H3 · Auth & registration
 
-- [ ] 3.1 Server action + form: Cuban company registration (all §6.1 fields, doc upload to private bucket, zod validation, pending company + application rows, auth user + email confirmation) — TDD on action + integration on flow
-- [ ] 3.2 Server action + form: foreign company registration (website required, no document) — TDD incl. missing-website rejection
-- [ ] 3.3 Login + middleware: session, company-status gate (`pending`/`rejected` → "under review" screen), admin role gate for `/admin/*`
-- [ ] 3.4 Approval flow: admin approve transaction (`status='approved'`, audit_log, trigger approval email via edge function `send-email` w/ Resend — dependency D-2) + rejection path (reason stored, copy-email affordance) — TDD
-- [ ] 3.5 Email change with verification to new address + password reset (Supabase recovery) — TDD on staging logic
+- [x] 3.1 Server action + form: Cuban company registration (all §6.1 fields, doc upload to private bucket, zod validation, pending company + application rows, auth user + email confirmation) — TDD on action + integration on flow
+- [x] 3.2 Server action + form: foreign company registration (website required, no document) — TDD incl. missing-website rejection
+- [x] 3.3 Login + middleware: session, company-status gate (`pending`/`rejected` → "under review" screen), admin role gate for `/admin/*`
+- [x] 3.4 Approval flow: admin approve transaction (`status='approved'`, audit_log, trigger approval email via edge function `send-email` w/ Resend — dependency D-2) + rejection path (reason stored, copy-email affordance) — TDD
+- [x] 3.5 Email change with verification to new address + password reset (Supabase recovery) — TDD on staging logic
 
 ## H4 · Admin backoffice
 
@@ -81,3 +81,23 @@ scaffolding. Do not skip ahead.
 - [ ] 10.1 Map every scenario of the 9 capability specs to automated tests; fill gaps until coverage ≥90% and all green
 - [ ] 10.2 Adversarial review pass (independent validator): RLS bypass attempts, IDOR on content/contact endpoints, storage abuse, rate limits, signup spam, SQL injection via search RPC
 - [ ] 10.3 Fix findings (spec update first if behavior changes — base-standards §7), then `/verify` report against acceptance criteria
+
+> **H3 build notes (2026-08-14).** Decisions taken during implementation,
+> recorded for traceability:
+> - **Access credentials at registration.** The funcional §6 fields don't
+>   mention a password, but login is email+password (Supabase Auth), so both
+>   registration forms capture `password` + confirmation (min 8 chars). The
+>   credential never reaches `registration_applications.payload`.
+> - **Approval email (3.4).** Sent directly from the server action via the
+>   Resend REST API (`src/lib/server/email.ts`) instead of a DB-webhook edge
+>   function — same secrecy (server-side only), one moving part less.
+>   `RESEND_API_KEY` optional: missing key ⇒ email skipped with a warning
+>   (dev/CI stay green). design.md §1 updated accordingly.
+> - **Gates split (3.3).** `middleware.ts` refreshes the session and applies
+>   the routing table (`src/lib/auth/session.ts`, unit-tested); the
+>   company-status screen and the admin gate live in the `/portal` and
+>   `/admin` layouts (DB-aware), with RLS as final enforcement.
+> - **`/admin` minimal landing**: pending-applications counter only; the
+>   review UI (inbox, doc viewer, copy-email) is task 4.2.
+> - **e2e fix**: the nav smoke test now opens the burger menu on mobile
+>   viewports (latent bug — CI only ran chromium).

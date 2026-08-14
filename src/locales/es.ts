@@ -67,6 +67,88 @@ export const es = {
     premium: 'Premium',
     resultsCount: (n: number) => `${n} ${n === 1 ? 'resultado' : 'resultados'}`,
   },
+  auth: {
+    register: {
+      title: 'Registro de MIPYME o cooperativa',
+      subtitle: 'La solicitud será revisada por el administrador antes de activar tu empresa.',
+      foreignTitle: 'Registro de empresa extranjera',
+      foreignSubtitle:
+        'No se exige documento acreditativo; la página web sirve de referencia de identificación.',
+      foreignLink: '¿Representas una empresa extranjera? Regístrate aquí',
+      cubanLink: '¿Eres una MIPYME o cooperativa cubana? Regístrate aquí',
+      applicantFirstName: 'Nombre del solicitante',
+      applicantLastName: 'Apellidos del solicitante',
+      email: 'Email',
+      phone: 'Teléfono',
+      companyName: 'Nombre de la empresa',
+      entityType: 'Tipo de entidad',
+      entityTypeMipyme: 'MIPYME',
+      entityTypeCooperative: 'Cooperativa',
+      province: 'Provincia',
+      municipality: 'Municipio',
+      municipalityEmpty: 'Selecciona una provincia',
+      address: 'Dirección física',
+      extraIdData: 'Datos identificativos adicionales',
+      extraIdDataHint: 'Códigos o referencias de inscripción (opcional)',
+      country: 'País',
+      website: 'Página web',
+      websiteHint: 'Obligatoria — https://…',
+      document: 'Documento acreditativo',
+      documentHint: 'PDF, JPG o PNG · máximo 10 MB',
+      password: 'Contraseña',
+      passwordHint: 'Mínimo 8 caracteres — será tu clave de acceso',
+      confirmPassword: 'Confirmar contraseña',
+      submit: 'Enviar solicitud',
+      submitting: 'Enviando…',
+      reviewFields: 'Revisa los campos marcados.',
+      successTitle: 'Solicitud enviada',
+      successBody:
+        'Tu solicitud está pendiente de revisión. Te avisaremos por email cuando el administrador la resuelva.',
+    },
+    login: {
+      title: 'Iniciar sesión',
+      email: 'Email',
+      password: 'Contraseña',
+      submit: 'Entrar',
+      submitting: 'Entrando…',
+      forgot: '¿Olvidaste tu contraseña?',
+      noAccount: '¿Todavía no tienes cuenta?',
+      registerCta: 'Registra tu empresa',
+    },
+    recover: {
+      title: 'Recuperar contraseña',
+      submit: 'Enviar enlace de recuperación',
+      submitting: 'Enviando…',
+      back: 'Volver al acceso',
+    },
+    reset: {
+      title: 'Nueva contraseña',
+      submit: 'Guardar contraseña',
+      submitting: 'Guardando…',
+      missingCode:
+        'El enlace de recuperación no es válido. Solicita uno nuevo desde recuperar contraseña.',
+      mismatch: 'Las contraseñas no coinciden.',
+    },
+    portal: {
+      title: 'Área empresarial',
+      pendingTitle: 'Solicitud en revisión',
+      pendingBody:
+        'Tu solicitud de incorporación está siendo revisada por el equipo de NexCuba. Recibirás un email en cuanto se resuelva.',
+      rejectedTitle: 'Solicitud desaprobada',
+      rejectedBody:
+        'Tu solicitud no fue aprobada. El motivo se te ha comunicado por email; escríbenos si necesitas más información.',
+      signOut: 'Cerrar sesión',
+      dashboardPlaceholder:
+        'El panel de empresa (perfil, contenido, networking) se activa en el siguiente hito.',
+    },
+    admin: {
+      title: 'Backoffice',
+      signOut: 'Cerrar sesión',
+      pendingApplications: (n: number) =>
+        `${n} ${n === 1 ? 'solicitud pendiente' : 'solicitudes pendientes'} de revisión`,
+      placeholder: 'La bandeja completa de gestión llega en el siguiente hito.',
+    },
+  },
 } as const;
 
 export type Locale = typeof es;

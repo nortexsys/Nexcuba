@@ -38,8 +38,12 @@ Technical design for the MVP. Spanish PO-facing rationale lives in
   switch). Table style: full-width, header row 12px uppercase gray-500, rows
   14px with subtle `gray-100` dividers, pill badges retained, row click →
   entity page.
-- **Email:** Resend via Supabase Edge Function (`send-email`) triggered by DB
-  webhooks — keeps SMTP creds server-side (dependency D-2, PO approval).
+- **Email:** Resend via its REST API, called server-side from the approval
+  action (`src/lib/server/email.ts`) — keeps SMTP creds server-only
+  (dependency D-2, PO approval). `RESEND_API_KEY` optional: missing key ⇒
+  email skipped with a warning (dev/CI); an email failure never fails the
+  approval itself. (A DB-webhook edge function remains an alternative if
+  triggers move to the database later.)
 
 ## 2. Data model (Postgres)
 
@@ -80,13 +84,20 @@ Computed server-side as a weighted checklist (logo, description ≥ N chars,
 
 ## 3. Auth & registration flow
 
-1. Public form (two variants: Cuban / foreign) → **server action** validates
+1. Public form (two variants: Cuban / foreign; both capture the access
+   password + confirmation since login is email/password — the credential
+   never reaches the application snapshot) → **server action** validates
    (zod) and creates: `auth.users` (email confirm), `companies` row
    (`status='pending'`), `registration_applications`, upload doc to private
-   bucket (Cuban only).
-2. User logs in → `profiles.role='company'`, middleware checks
-   `companies.status`: `pending` → portal shows "under review" screen only;
-   `rejected` → same, with the manual email as the only communication channel.
+   bucket (Cuban only). Runs as a saga with the service-role client and a
+   compensating rollback (delete company + auth user) so a half application
+   never survives.
+2. User logs in → `profiles.role='company'`, middleware refreshes the session
+   and applies the routing table (pure, unit-tested); the `/portal` layout
+   checks `companies.status`: `pending` → portal shows "under review" screen
+   only; `rejected` → same, with the manual email as the only communication
+   channel; `/admin` layout gates on `role='admin'`. RLS is the final
+   enforcement layer either way.
 3. Admin approves (backoffice) → transaction sets `status='approved'`, writes
    `audit_log`, triggers approval email (edge function). Rejection stores the
    reason; email is sent manually by the admin from their own client

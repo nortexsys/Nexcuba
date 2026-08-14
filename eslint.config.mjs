@@ -26,6 +26,11 @@ const eslintConfig = [
     // See design.md §10 and scripts/check-secrets-usage.mjs (CI belt-and-braces).
     files: ['src/**/*.{ts,tsx}'],
     rules: {
+      // Underscore-prefixed identifiers mark intentionally unused bindings.
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_' },
+      ],
       'no-restricted-imports': [
         'error',
         {
@@ -43,6 +48,15 @@ const eslintConfig = [
   {
     // The server-only modules themselves may import their siblings.
     files: ['src/lib/server/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': 'off',
+    },
+  },
+  {
+    // Server actions ('use server') may use the server-only modules: Next
+    // replaces their imports with RPC references, never bundling them client-
+    // side. scripts/check-secrets-usage.mjs still greps for raw key names.
+    files: ['src/app/**/actions.ts'],
     rules: {
       'no-restricted-imports': 'off',
     },

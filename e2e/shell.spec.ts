@@ -23,7 +23,13 @@ test.describe('app shell (H1 smoke)', () => {
 
   test('header nav exposes the five public sections', async ({ page }) => {
     await page.goto('/');
-    const nav = page.getByRole('navigation', { name: 'Principal' });
+
+    // On mobile the nav lives behind the burger menu (Header, H1).
+    const burger = page.getByRole('button', { name: 'Abrir menú' });
+    const isMobile = await burger.isVisible();
+    if (isMobile) await burger.click();
+
+    const nav = page.getByRole('navigation', { name: isMobile ? 'Principal móvil' : 'Principal' });
     for (const label of ['Empresas', 'Productos', 'Servicios', 'Proyectos', 'Oportunidades']) {
       await expect(nav.getByRole('link', { name: label })).toBeVisible();
     }
