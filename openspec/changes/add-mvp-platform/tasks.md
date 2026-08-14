@@ -14,13 +14,13 @@ scaffolding. Do not skip ahead.
 
 ## H2 · Data foundation
 
-- [ ] 2.1 Migration: territory seed (`provinces`, `municipalities` — 15 + Isla de la Juventud, 168 municipios) + integration tests for chained selectors' data
-- [ ] 2.2 Migration: taxonomies (`sectors`, `categories`, `tags`) + initial seed (PO-reviewable via backoffice later, dependency D-4) + `company_sectors`
-- [ ] 2.3 Migration: `companies`, `profiles`, `registration_applications`, `verification_documents` with enums and constraints
-- [ ] 2.4 Migration: content tables (`products`, `services`, `projects`, `opportunities`, `content_tags`, `images`) with publishing-right predicate helper (SQL function `can_publish(company_id)`)
-- [ ] 2.5 Migration: `contact_requests`, `notifications`, `audit_log`, `crm_records` + statistics views (all Fase 1 counters)
-- [ ] 2.6 RLS baseline: apply the full RLS matrix (design §4) with pgTAP/integration tests per policy — every spec scenario saying "the server rejects" maps to a test here
-- [ ] 2.7 Storage: buckets `media` (public) and `verification-docs` (private), path conventions, size/type server validation helpers (magic bytes) with unit tests
+- [x] 2.1 Migration: territory seed (`provinces`, `municipalities` — 15 + Isla de la Juventud, 168 municipios) + integration tests for chained selectors' data
+- [x] 2.2 Migration: taxonomies (`sectors`, `categories`, `tags`) + initial seed (PO-reviewable via backoffice later, dependency D-4) + `company_sectors`
+- [x] 2.3 Migration: `companies`, `profiles`, `registration_applications`, `verification_documents` with enums and constraints
+- [x] 2.4 Migration: content tables (`products`, `services`, `projects`, `opportunities`, `content_tags`, `images`) with publishing-right predicate helper (SQL function `can_publish(company_id)`)
+- [x] 2.5 Migration: `contact_requests`, `notifications`, `audit_log`, `crm_records` + statistics views (all Fase 1 counters)
+- [x] 2.6 RLS baseline: apply the full RLS matrix (design §4) with pgTAP/integration tests per policy — every spec scenario saying "the server rejects" maps to a test here
+- [x] 2.7 Storage: buckets `media` (public) and `verification-docs` (private), path conventions, size/type server validation helpers (magic bytes) with unit tests
 
 ## H3 · Auth & registration
 
