@@ -1,7 +1,7 @@
 # Propuesta de cambio — MVP NexCuba (add-mvp-platform)
 
 **Fase:** 2 · Definición — Especificación
-**Estado:** Pendiente de aprobación del Product Owner
+**Estado:** ✅ Aprobado por el Product Owner el 2026-08-14 (incluye adición D-5: modo dual de visualización de listados)
 **Fecha:** Agosto 2026
 **Perfil:** B — Aplicación web (SDD completo)
 

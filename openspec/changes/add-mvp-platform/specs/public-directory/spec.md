@@ -48,6 +48,30 @@ proyectos ni oportunidades.
 - **THEN** la empresa aparece en la sección de empresas destacadas del home
 - **AND** al dejar de estar marcada, desaparece de la sección
 
+### Requirement: Modo dual de visualización de listados
+Los listados públicos (empresas, productos, servicios, proyectos y
+oportunidades) se podrán mostrar en dos modos: **vista de tarjetas**
+(estándar, por defecto en ordenador y tablet) y **vista de tabla** (por
+defecto en móvil). El visitante podrá alternar entre ambos en cualquier
+momento desde un control visible junto al listado (funcional §12.6, decisión D-5).
+
+#### Scenario: Tarjetas por defecto en escritorio/tablet
+- **WHEN** un visitante abre un listado desde un dispositivo de escritorio o tablet
+- **THEN** los resultados se muestran en vista de tarjetas
+
+#### Scenario: Tabla por defecto en móvil
+- **WHEN** un visitante abre un listado desde un dispositivo móvil
+- **THEN** los resultados se muestran en vista de tabla por defecto
+
+#### Scenario: Alternar de modo
+- **WHEN** el visitante cambia el modo con el control del listado
+- **THEN** el listado se muestra en el modo elegido sin perder filtros, búsqueda ni ordenación aplicados
+- **AND** la preferencia se recuerda durante la sesión
+
+#### Scenario: Vista de tabla equivalente
+- **WHEN** un listado se muestra en vista de tabla
+- **THEN** cada fila ofrece la información esencial del elemento (nombre, empresa responsable cuando aplique, territorio/sector, badges de verificación/premium) y acceso a su ficha
+
 ### Requirement: Páginas de sectores y territorio
 El área pública ofrecerá páginas navegables por sector y por provincia (y
 municipio cuando aplique) listando las empresas y contenido asociados, como base

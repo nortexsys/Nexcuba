@@ -29,6 +29,15 @@ Technical design for the MVP. Spanish PO-facing rationale lives in
 - **Design tokens:** from `design-spec.md` (Tailwind theme: Plus Jakarta Sans,
   ink `#111827`, gold `#E8C98A`, cream scale, radius-16 cards, pill buttons,
   no shadows).
+- **Dual list view (D-5):** every public listing (companies, products,
+  services, projects, opportunities, search results) renders two layouts from
+  one data source: card grid (default desktop/tablet) and compact table
+  (default mobile, `<md`). A `ViewToggle` segmented pill control sits beside
+  each listing; choice persists in `sessionStorage` per section and never
+  touches URL query params (filters/search/pagination stay untouched on
+  switch). Table style: full-width, header row 12px uppercase gray-500, rows
+  14px with subtle `gray-100` dividers, pill badges retained, row click →
+  entity page.
 - **Email:** Resend via Supabase Edge Function (`send-email`) triggered by DB
   webhooks — keeps SMTP creds server-side (dependency D-2, PO approval).
 

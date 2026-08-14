@@ -39,6 +39,9 @@ tipado estricto, cobertura ≥90%, validación server-side, RLS multiempresa.
 | D-2 | Premium en Fase 1 | Alta manual por administrador (con caducidad anual). Sin pasarela de pago en MVP | 2026-08-14 |
 | D-3 | Git | Repo propio en la carpeta del proyecto → github.com/nortexsys/Nexcuba; `docs/` y `.env` nunca se comitean | 2026-08-14 |
 | D-4 | Propuesta Fase 2 | Ligera: alcance por bloques + hitos, sin presupuesto detallado | 2026-08-14 |
+| D-5 | Modo dual de visualización de listados | Tarjetas por defecto en escritorio/tablet, tabla por defecto en móvil, alternable por el visitante sin perder filtros/búsqueda/orden (funcional v1.1 §12.6) | 2026-08-14 |
+
+**Fase 2 aprobada por el Product Owner el 2026-08-14** (propuesta, 9 specs, design, tasks y dependencia D-2/Resend). Fase 3 considerada cubierta por `design-spec.md` + estructura de páginas de las specs (criterio del PO). Siguiente: Fase 4 · Construcción (H1).
 
 ## Reglas duras del proyecto (del funcional)
 

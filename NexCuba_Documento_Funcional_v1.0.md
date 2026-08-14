@@ -14,10 +14,12 @@ Agosto 2026
 | --- | --- |
 | **Elemento** | **Valor** |
 | Documento | NexCuba — Documento Funcional |
-| Versión | 1.0 |
+| Versión | 1.1 |
 | Estado | Base funcional para diseño y desarrollo |
 | Fecha | Agosto 2026 |
 | Alcance | MVP / Fase 1 + evolución prevista |
+
+> Cambios v1.1: añadido §12.6 Modos de visualización de listados (aprobado por el Product Owner en Fase 2 · Definición).
 
 # 1. Resumen ejecutivo
 
@@ -276,6 +278,15 @@ Los resultados se ordenarán inicialmente por fecha de publicación, de más rec
 ## 12.5 Búsqueda inteligente
 
 La búsqueda en lenguaje natural y las capacidades de IA quedan previstas para una fase posterior y no forman parte de la Fase 1.
+
+## 12.6 Modos de visualización de listados
+
+Los listados públicos de empresas, productos, servicios, proyectos y oportunidades, así como los resultados de búsqueda, podrán mostrarse en dos modos de visualización:
+
+* Vista de tarjetas (estándar): cards con su contenido completo. Modo por defecto en ordenador y tablet.
+* Vista de tabla: resultados en formato tabla, más compacta. Modo por defecto en versión móvil.
+
+El usuario podrá alternar entre ambos modos en cualquier momento desde un control visible junto al listado. El cambio de modo no alterará los filtros, la búsqueda ni la ordenación aplicados.
 
 # 13. Taxonomías y clasificación
 

@@ -47,6 +47,16 @@ reciente a más antiguo (`created_at DESC`).
 - **WHEN** se muestra cualquier listado de resultados sin orden explícito elegido
 - **THEN** el contenido más reciente aparece primero
 
+### Requirement: Modo dual en resultados de búsqueda
+La página de resultados del buscador general respetará el modo dual de
+visualización definido en `public-directory` (tarjetas por defecto en
+escritorio/tablet, tabla por defecto en móvil, alternable por el visitante),
+aplicado por grupo de entidad.
+
+#### Scenario: Resultados en modo dual
+- **WHEN** el visitante ejecuta una búsqueda general
+- **THEN** los resultados por entidad se muestran en el modo de visualización activo (tarjetas o tabla) y puede alternarlo sin perder el término buscado
+
 ### Requirement: Búsqueda inteligente fuera de alcance
 La búsqueda en lenguaje natural y capacidades de IA quedan fuera de Fase 1; el
 buscador será de texto clave y filtros.

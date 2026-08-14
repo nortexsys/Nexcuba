@@ -8,7 +8,7 @@ scaffolding. Do not skip ahead.
 ## H1 · Scaffolding & tooling
 
 - [ ] 1.1 Scaffold Next.js 15 App Router + TypeScript strict (`noUncheckedIndexedAccess`, `strict`), ESLint, Prettier, Vitest + Testing Library + Playwright wired, CI workflow (lint, typecheck, tests, coverage ≥90% gate)
-- [ ] 1.2 Tailwind design tokens from `design-spec.md` (Plus Jakarta Sans via `next/font`, ink/gold/cream scales, radius-16 cards, pill buttons) + base components (`Button`, `Card`, `Badge`, `Chip`) with unit tests + Storybook-less visual smoke (Playwright screenshots)
+- [ ] 1.2 Tailwind design tokens from `design-spec.md` (Plus Jakarta Sans via `next/font`, ink/gold/cream scales, radius-16 cards, pill buttons) + base components (`Button`, `Card`, `Badge`, `Chip`, `ViewToggle`, `DataTable`) with unit tests + visual smoke (Playwright screenshots) — dual list view per spec `public-directory` (cards default desktop/tablet, table default mobile)
 - [ ] 1.3 App shell: sticky header (nav + login/register pill buttons), global search bar container below nav (centered, placeholder «Búsqueda general en nexcuba.org» — wiring in 7.x), cream footer with 4 columns; error/not-found/loading primitives
 - [ ] 1.4 Supabase client wiring: typed client factory (browser anon / server anon / server service-role), zod env schema, lint rule + CI check that service-role never reaches client bundles
 
@@ -45,9 +45,9 @@ scaffolding. Do not skip ahead.
 ## H5 · Public area
 
 - [ ] 5.1 Home: dark hero (72px H1, CTA), stats band, sector cards, featured companies section (from `is_featured`), how-it-works, final CTA — visual per `design-spec.md`
-- [ ] 5.2 Companies directory: grid cards (logo, name, verified badge, sector, location, 2-line description, stats, view profile) + section filters (type, sector, province, municipality, verification) — TDD on filter queries
+- [ ] 5.2 Companies directory: dual-view listing (cards/table, `ViewToggle` + `DataTable`) with grid cards (logo, name, verified badge, sector, location, 2-line description, stats, view profile) + section filters (type, sector, province, municipality, verification) — TDD on filter queries and view-mode defaults
 - [ ] 5.3 Company public profile: full §9 ficha (all fields, gallery, published content tabs, public contact block, internal contact button gated by networking right)
-- [ ] 5.4 Content sections: products grid, services list, projects, opportunities with section filters — TDD on queries
+- [ ] 5.4 Content sections: products grid, services list, projects, opportunities with section filters and dual view (cards/table) — TDD on queries
 - [ ] 5.5 Sector pages `/sectores/[slug]` + territory pages `/p/[provincia](/[municipio])` generated only when non-empty (thin-page guard) — TDD
 
 ## H6 · Company portal
@@ -60,7 +60,7 @@ scaffolding. Do not skip ahead.
 ## H7 · Search
 
 - [ ] 7.1 FTS migration: generated `tsvector` columns ('spanish' config, unaccented) + unified `search_all(query)` RPC grouped by entity — TDD on matching/relevance basics
-- [ ] 7.2 Global search bar wiring: submit → results page grouped by 5 entity types, only approved/visible content, default `created_at DESC` — E2E from any screen
+- [ ] 7.2 Global search bar wiring: submit → results page grouped by 5 entity types, only approved/visible content, default `created_at DESC`, dual view per group — E2E from any screen
 - [ ] 7.3 Section search + filter chips sync to URL (shareable/back-button-safe) — TDD on URL builders
 
 ## H8 · Networking
