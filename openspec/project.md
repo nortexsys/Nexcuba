@@ -58,3 +58,7 @@ tipado estricto, cobertura ≥90%, validación server-side, RLS multiempresa.
 - Artefactos para el Product Owner (propuestas, specs): **español**.
 - Artefactos técnicos (código, commits, tests, `design.md`, `tasks.md`): **inglés**.
 - Basado en `base-standards.md` de nortex-web-infra.
+- **Git (doble cuenta):** remote SIEMPRE por SSH alias `git@github-nortexsys:nortexsys/Nexcuba.git`
+  (nunca HTTPS, que usaría la cuenta personal `aguillensp-sudo`). Identidad local:
+  `nortexsys <nortexsys@users.noreply.github.com>`. Referencia local de la configuración:
+  `C:\Users\admin\git-doble-cuenta-github.md` (no se comitea).
