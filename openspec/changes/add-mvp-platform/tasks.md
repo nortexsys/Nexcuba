@@ -32,15 +32,15 @@ scaffolding. Do not skip ahead.
 
 ## H4 · Admin backoffice
 
-- [ ] 4.1 Backoffice layout + admin guard + audit_log write helper for all critical actions
-- [ ] 4.2 Applications inbox: list/filter, detail view with document viewer (signed URL), approve/reject actions (uses 3.4) — E2E happy + negative
-- [ ] 4.3 Companies management: list/detail, edit administrative fields, toggle featured (reflects in home) — TDD
-- [ ] 4.4 Manual Premium: activate with 12-month expiry, history, `premium_until` predicate effects (publishing + public visibility) + `pg_cron` expiry sweep — TDD on predicate + job
-- [ ] 4.5 Taxonomies manager: CRUD sectors/categories/opportunity-types/tags with soft-deactivate that preserves history — TDD
-- [ ] 4.6 Content oversight: browse all content, hide/unhide (audit-logged), delete — TDD on visibility predicate
-- [ ] 4.7 Networking overview (basic consult) — lists with statuses
-- [ ] 4.8 Statistics dashboard: all Fase 1 counters + altas/publicaciones evolution chart (from views) — snapshot tests
-- [ ] 4.9 CRM module: per-company digitalization record (internal-only, RLS admin-only) — TDD incl. invisibility to company/public
+- [x] 4.1 Backoffice layout + admin guard + audit_log write helper for all critical actions
+- [x] 4.2 Applications inbox: list/filter, detail view with document viewer (signed URL), approve/reject actions (uses 3.4) — E2E happy + negative
+- [x] 4.3 Companies management: list/detail, edit administrative fields, toggle featured (reflects in home) — TDD
+- [x] 4.4 Manual Premium: activate with 12-month expiry, history, `premium_until` predicate effects (publishing + public visibility) + `pg_cron` expiry sweep — TDD on predicate + job
+- [x] 4.5 Taxonomies manager: CRUD sectors/categories/opportunity-types/tags with soft-deactivate that preserves history — TDD
+- [x] 4.6 Content oversight: browse all content, hide/unhide (audit-logged), delete — TDD on visibility predicate
+- [x] 4.7 Networking overview (basic consult) — lists with statuses
+- [x] 4.8 Statistics dashboard: all Fase 1 counters + altas/publicaciones evolution chart (from views) — snapshot tests
+- [x] 4.9 CRM module: per-company digitalization record (internal-only, RLS admin-only) — TDD incl. invisibility to company/public
 
 ## H5 · Public area
 
@@ -101,3 +101,22 @@ scaffolding. Do not skip ahead.
 >   review UI (inbox, doc viewer, copy-email) is task 4.2.
 > - **e2e fix**: the nav smoke test now opens the burger menu on mobile
 >   viewports (latent bug — CI only ran chromium).
+
+> **H4 build notes (2026-08-16).** Decisions taken during implementation,
+> recorded for traceability:
+> - **Premium history (4.4)** is the audit log itself (`company.premium.*`
+>   entries with `premium_until` metadata) — no extra table in Fase 1.
+> - **Expiry sweep (migration 0008)**: publishing rights already expire via the
+>   live `premium_until > now()` predicate, so `sweep_expired_premium()` only
+>   notifies the affected foreign company once (7-day window, idempotent);
+>   pg_cron schedule is created only when the extension exists.
+> - **tags.is_active (4.5)** added in 0008 — deleting a tag would cascade away
+>   its content_tags history; soft-deactivate matches sectors/categories.
+> - **Slugs** are DB-generated columns; the backoffice never computes them.
+> - **E2E scope (4.2)**: the negative authorization path (anonymous → redirect
+>   to /acceso) is automated for /admin and /portal. The happy-path inbox flow
+>   is covered by unit tests over the domain modules plus the SQL RLS suite;
+>   a full browser E2E needs a seeded Supabase project in CI (revisit in H10).
+> - **ESLint**: `@/lib/server/*` imports are allowed across `src/app/**`
+>   (server components + actions). The real guards stay in place:
+>   `import 'server-only'` on the service client and the CI secrets check.

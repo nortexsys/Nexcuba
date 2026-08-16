@@ -1,4 +1,5 @@
 import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { Footer } from '@/components/layout/Footer';
 import { Header } from '@/components/layout/Header';
@@ -26,6 +27,30 @@ describe('Header', () => {
     render(<Header />);
     expect(screen.getByRole('link', { name: es.header.login })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: es.header.register })).toBeInTheDocument();
+  });
+
+  it('opens and closes the mobile menu with the burger button', async () => {
+    const user = userEvent.setup();
+    render(<Header />);
+
+    const open = screen.getByRole('button', { name: es.header.openMenu });
+    await user.click(open);
+
+    const mobileNav = screen.getByRole('navigation', { name: 'Principal móvil' });
+    for (const label of Object.values(es.header.nav)) {
+      expect(within(mobileNav).getByRole('link', { name: label })).toBeInTheDocument();
+    }
+    expect(within(mobileNav).getByRole('link', { name: es.header.login })).toBeInTheDocument();
+    expect(within(mobileNav).getByRole('link', { name: es.header.register })).toBeInTheDocument();
+
+    // A nav link closes the menu (aria-expanded flips back).
+    await user.click(within(mobileNav).getByRole('link', { name: es.header.nav.companies }));
+    expect(screen.queryByRole('navigation', { name: 'Principal móvil' })).not.toBeInTheDocument();
+
+    // Reopen and close explicitly with the X button.
+    await user.click(screen.getByRole('button', { name: es.header.openMenu }));
+    await user.click(screen.getByRole('button', { name: es.header.closeMenu }));
+    expect(screen.queryByRole('navigation', { name: 'Principal móvil' })).not.toBeInTheDocument();
   });
 });
 

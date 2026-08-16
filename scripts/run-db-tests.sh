@@ -19,4 +19,13 @@ echo "▶ loading assertion framework"
 psql "$DB_URL" -v ON_ERROR_STOP=1 -q -f "$ROOT/tests/db/framework.sql"
 
 echo "▶ running db test suite"
-psql "$DB_URL" -v ON_ERROR_STOP=1 -f "$ROOT/tests/db/rls.test.sql"
+# rls.test.sql asserts global counts, so it must run before any other suite
+# inserts fixtures; other suites must use their own fixture id ranges.
+ordered_files=("$ROOT/tests/db/rls.test.sql")
+for f in "$ROOT"/tests/db/*.test.sql; do
+  [ "$f" = "$ROOT/tests/db/rls.test.sql" ] || ordered_files+=("$f")
+done
+for f in "${ordered_files[@]}"; do
+  echo "▶ $(basename "$f")"
+  psql "$DB_URL" -v ON_ERROR_STOP=1 -f "$f"
+done

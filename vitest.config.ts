@@ -13,8 +13,15 @@ export default defineConfig({
       provider: 'v8',
       include: ['src/**/*.{ts,tsx}'],
       // App-router pages/routes/middleware get E2E coverage (Playwright); the
-      // unit gate applies to components, hooks, lib and locales.
-      exclude: ['src/app/**', 'src/middleware.ts', 'src/**/*.test.{ts,tsx}', 'src/types/**'],
+      // unit gate applies to components, hooks, lib and locales. src/test/**
+      // is unit-test infrastructure (mocks/stubs), not product code.
+      exclude: [
+        'src/app/**',
+        'src/middleware.ts',
+        'src/test/**',
+        'src/**/*.test.{ts,tsx}',
+        'src/types/**',
+      ],
       reporter: ['text', 'lcov'],
       thresholds: {
         statements: 90,

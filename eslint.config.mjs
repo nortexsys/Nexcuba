@@ -53,10 +53,11 @@ const eslintConfig = [
     },
   },
   {
-    // Server actions ('use server') may use the server-only modules: Next
-    // replaces their imports with RPC references, never bundling them client-
-    // side. scripts/check-secrets-usage.mjs still greps for raw key names.
-    files: ['src/app/**/actions.ts'],
+    // App-router pages, layouts and server actions are server code ('use
+    // server' files become RPC references; RSC never ships to the browser).
+    // The actual guards for the privileged key are: `import 'server-only'` in
+    // supabase-service.ts (build error if bundled) and the CI secrets check.
+    files: ['src/app/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-imports': 'off',
     },

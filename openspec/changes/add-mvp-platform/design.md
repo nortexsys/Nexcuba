@@ -44,6 +44,13 @@ Technical design for the MVP. Spanish PO-facing rationale lives in
   email skipped with a warning (dev/CI); an email failure never fails the
   approval itself. (A DB-webhook edge function remains an alternative if
   triggers move to the database later.)
+- **Backoffice (H4):** every mutation runs with the admin's session client
+  (RLS is the gate) through domain modules in
+  `src/lib/server/backoffice/*`; the audit trail doubles as the Premium
+  history. Expiry of Premium publishing rights is predicate-based
+  (`premium_until > now()`); migration 0008 adds a notify-only, idempotent
+  `sweep_expired_premium()` scheduled via pg_cron when available, plus
+  `tags.is_active` so tag deactivation preserves `content_tags` history.
 
 ## 2. Data model (Postgres)
 
