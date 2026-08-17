@@ -62,7 +62,10 @@ describe('message-optional states', () => {
     const user = userEvent.setup();
     render(
       <CreateTaxonomyForm
-        action={vi.fn(async () => ({ status: 'success', message: es.auth.admin.taxonomies.saved }))}
+        action={vi.fn(async (): Promise<AdminActionState> => ({
+          status: 'success',
+          message: es.auth.admin.taxonomies.saved,
+        }))}
         kind="sector"
       />,
     );
