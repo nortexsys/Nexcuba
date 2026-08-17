@@ -90,3 +90,40 @@ select assert.ok(
   'tags: is_active = false tras desactivar');
 
 select assert.finish();
+
+-- ═══════════════════ public company slugs (H5, migration 0009) ═══════════════════
+
+insert into public.companies (id, legal_name, display_name, entity_type, status)
+values ('12000000-0000-4000-b000-00000000000a', 'Café de Altura SRL', 'Café de Altura', 'mipyme', 'approved');
+
+select assert.ok(
+  (select slug from public.companies where id = '12000000-0000-4000-b000-00000000000a') = 'cafe-de-altura',
+  'slugs: se genera desde el nombre comercial (sin acentos)');
+
+insert into public.companies (id, legal_name, display_name, entity_type, status)
+values ('12000000-0000-4000-b000-0000000000b0', 'Otra Café de Altura', 'Café de Altura', 'cooperative', 'approved');
+
+select assert.ok(
+  (select slug from public.companies where id = '12000000-0000-4000-b000-0000000000b0')
+    = 'cafe-de-altura-12000000',
+  'slugs: nombre duplicado → sufijo corto con id');
+
+select assert.ok(
+  (select slug from public.companies where id = '12000000-0000-4000-b000-00000000000a') = 'cafe-de-altura',
+  'slugs: el original conserva su slug');
+
+update public.companies set display_name = 'Café de Altura Premium'
+  where id = '12000000-0000-4000-b000-00000000000a';
+
+select assert.ok(
+  (select slug from public.companies where id = '12000000-0000-4000-b000-00000000000a') = 'cafe-de-altura-premium',
+  'slugs: renombrar regenera el slug');
+
+-- Sin nombre comercial → usa la razón social
+insert into public.companies (id, legal_name, entity_type, status)
+values ('12000000-0000-4000-b000-00000000000c', 'Sin Display SL', 'foreign', 'approved');
+select assert.ok(
+  (select slug from public.companies where id = '12000000-0000-4000-b000-00000000000c') = 'sin-display-sl',
+  'slugs: fallback a razón social');
+
+select assert.finish();

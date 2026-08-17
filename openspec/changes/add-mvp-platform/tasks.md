@@ -44,11 +44,11 @@ scaffolding. Do not skip ahead.
 
 ## H5 · Public area
 
-- [ ] 5.1 Home: dark hero (72px H1, CTA), stats band, sector cards, featured companies section (from `is_featured`), how-it-works, final CTA — visual per `design-spec.md`
-- [ ] 5.2 Companies directory: dual-view listing (cards/table, `ViewToggle` + `DataTable`) with grid cards (logo, name, verified badge, sector, location, 2-line description, stats, view profile) + section filters (type, sector, province, municipality, verification) — TDD on filter queries and view-mode defaults
-- [ ] 5.3 Company public profile: full §9 ficha (all fields, gallery, published content tabs, public contact block, internal contact button gated by networking right)
-- [ ] 5.4 Content sections: products grid, services list, projects, opportunities with section filters and dual view (cards/table) — TDD on queries
-- [ ] 5.5 Sector pages `/sectores/[slug]` + territory pages `/p/[provincia](/[municipio])` generated only when non-empty (thin-page guard) — TDD
+- [x] 5.1 Home: dark hero (72px H1, CTA), stats band, sector cards, featured companies section (from `is_featured`), how-it-works, final CTA — visual per `design-spec.md`
+- [x] 5.2 Companies directory: dual-view listing (cards/table, `ViewToggle` + `DataTable`) with grid cards (logo, name, verified badge, sector, location, 2-line description, stats, view profile) + section filters (type, sector, province, municipality, verification) — TDD on filter queries and view-mode defaults
+- [x] 5.3 Company public profile: full §9 ficha (all fields, gallery, published content tabs, public contact block, internal contact button gated by networking right)
+- [x] 5.4 Content sections: products grid, services list, projects, opportunities with section filters and dual view (cards/table) — TDD on queries
+- [x] 5.5 Sector pages `/sectores/[slug]` + territory pages `/p/[provincia](/[municipio])` generated only when non-empty (thin-page guard) — TDD
 
 ## H6 · Company portal
 
@@ -120,3 +120,28 @@ scaffolding. Do not skip ahead.
 > - **ESLint**: `@/lib/server/*` imports are allowed across `src/app/**`
 >   (server components + actions). The real guards stay in place:
 >   `import 'server-only'` on the service client and the CI secrets check.
+
+> **H5 build notes (2026-08-16).**
+> - **Company slugs (migration 0009)**: `/empresas/[slug]` resolves by a
+>   DB-generated slug (display_name → legal_name fallback, deduplicated with a
+>   short-id suffix, unique index, backfilled; renaming regenerates it).
+> - **Public client**: server-rendered public pages use a plain anon client
+>   (`src/lib/supabase/public.ts`, no cookies) so RLS-as-anon is the only
+>   visibility rule. All public queries go through `safeQuery` — Supabase
+>   outages or missing config degrade to empty states, never 500s (verified
+>   in CI, which runs without env).
+> - **Verification filter (§12.3)** omitted from the directory UI: every
+>   listed company is verified by construction (RLS only exposes approved);
+>   a control that cannot change results would be misleading.
+> - **Sector pages** list the sector's approved companies; cross-company
+>   "associated content" queries arrive with H7's unified search. Territory
+>   pages verify municipality∈province at routing level (composite FK).
+> - **Thin-page guard (§24)**: unknown or empty sector/territory pages render
+>   404 instead of indexable empty listings (asserted in e2e).
+> - **Internal contact button** on the ficha is gated server-side by
+>   `computeNetworkingRight` (cuban approved / foreign premium) and links to
+>   `/portal/contactos?empresa=slug` — the request form itself is H8.
+> - e2e: Playwright has no `test.each`; parameterized runs use plain loops.
+> - **PENDIENTE CRÍTICO**: the real Supabase project still has NO migrations
+>   applied (schema cache empty) — home/directory render empty against it.
+>   Apply 0001–0009 via SQL editor or `supabase db push` before any demo.

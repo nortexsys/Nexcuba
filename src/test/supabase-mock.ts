@@ -16,6 +16,8 @@ export interface TableSpec {
   error?: { message: string; code?: string } | null;
   /** Error only for mutations (insert/update/delete/upsert); reads succeed. */
   mutationError?: { message: string; code?: string } | null;
+  /** `count` returned for head-count queries ({ count: 'exact' }). */
+  count?: number;
 }
 
 export interface MockCalls {
@@ -23,6 +25,8 @@ export interface MockCalls {
   updates: Record<string, Record<string, unknown>[]>;
   deletes: Record<string, string[]>;
   eqFilters: Record<string, Record<string, unknown>[]>;
+  orFilters: Record<string, string[]>;
+  selectColumns: Record<string, unknown[]>;
   rpc: ReturnType<typeof vi.fn>;
 }
 
@@ -30,13 +34,25 @@ export function makeSupabaseClient(
   tables: Record<string, TableSpec> = {},
   rpcResults: Record<string, unknown> = {},
 ): { client: SupabaseClient; calls: MockCalls } {
-  const calls: MockCalls = { inserts: {}, updates: {}, deletes: {}, eqFilters: {}, rpc: vi.fn() };
+  const calls: MockCalls = {
+    inserts: {},
+    updates: {},
+    deletes: {},
+    eqFilters: {},
+    orFilters: {},
+    selectColumns: {},
+    rpc: vi.fn(),
+  };
 
   const from = vi.fn((table: string) => {
     const spec = tables[table] ?? {};
     const error = spec.error ?? null;
     const mutationError = spec.mutationError ?? error;
-    const listResult = { data: error ? null : (spec.rows ?? []), error };
+    const listResult = {
+      data: error ? null : (spec.rows ?? []),
+      error,
+      count: error ? null : (spec.count ?? null),
+    };
     const singleResult = { data: error ? null : (spec.row ?? null), error };
 
     const chain: Record<string, unknown> = {
@@ -45,20 +61,17 @@ export function makeSupabaseClient(
         onRejected?: ((reason: unknown) => R | PromiseLike<R>) | null,
       ) => Promise.resolve(listResult).then(onFulfilled as never, onRejected as never),
     };
-    for (const method of [
-      'select',
-      'order',
-      'limit',
-      'or',
-      'ilike',
-      'in',
-      'gt',
-      'lt',
-      'is',
-      'textSearch',
-    ]) {
+    for (const method of ['order', 'limit', 'ilike', 'in', 'gt', 'lt', 'is', 'textSearch']) {
       chain[method] = vi.fn(() => chain);
     }
+    chain.select = vi.fn((...args: unknown[]) => {
+      (calls.selectColumns[table] ??= []).push(args[0]);
+      return chain;
+    });
+    chain.or = vi.fn((expression: string) => {
+      (calls.orFilters[table] ??= []).push(expression);
+      return chain;
+    });
     for (const method of ['eq', 'neq']) {
       chain[method] = vi.fn((column: string, value: unknown) => {
         (calls.eqFilters[table] ??= []).push({ column, value });
@@ -124,6 +137,9 @@ export function makeSupabaseClient(
         createSignedUrl: vi.fn(async (path: string, ttl: number) => ({
           data: { signedUrl: `https://signed.example/${bucket}/${path}?ttl=${ttl}` },
           error: null,
+        })),
+        getPublicUrl: vi.fn((path: string) => ({
+          data: { publicUrl: `https://media.example/${bucket}/${path}` },
         })),
       })),
     },

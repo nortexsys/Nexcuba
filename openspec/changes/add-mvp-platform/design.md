@@ -51,6 +51,14 @@ Technical design for the MVP. Spanish PO-facing rationale lives in
   (`premium_until > now()`); migration 0008 adds a notify-only, idempotent
   `sweep_expired_premium()` scheduled via pg_cron when available, plus
   `tags.is_active` so tag deactivation preserves `content_tags` history.
+- **Public area (H5):** public pages render with a plain anon client
+  (`src/lib/supabase/public.ts`, no cookies) so RLS-as-anon is the single
+  visibility rule; queries live in `src/lib/public/queries.ts` behind
+  `safeQuery` (graceful empty states — CI runs without Supabase env).
+  `/empresas/[slug]` resolves by the DB-generated slug of migration 0009
+  (display_name → legal_name, id-suffix dedupe, unique index). Sector and
+  territory pages 404 when unknown or empty (funcional §24 thin-page guard);
+  the municipality∈province composite FK is mirrored at routing level.
 
 ## 2. Data model (Postgres)
 
