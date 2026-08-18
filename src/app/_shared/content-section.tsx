@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ContentCard } from '@/components/public/ContentCard';
 import { DualListing } from '@/components/public/DualListing';
 import { DataTable } from '@/components/ui/DataTable';
+import { FilterChips } from '@/components/ui/FilterChips';
 import {
   listPublicContent,
   safeQuery,
@@ -9,6 +10,7 @@ import {
   type PublicContentItem,
 } from '@/lib/public/queries';
 import { getPublicClient } from '@/lib/supabase/public';
+import { filterChips } from '@/lib/url/filters';
 import { es } from '@/locales/es';
 
 /**
@@ -62,6 +64,23 @@ export function contentSection(type: PublicContentType) {
 
     const selectClass =
       'rounded-full border border-gray-300 bg-white px-4 py-2 text-sm text-ink focus:border-ink';
+
+    const coverageMap = c.coverage as Record<string, string>;
+    const opportunityMap = c.opportunityType as Record<string, string>;
+    const chips = filterChips({
+      pathname: `/${type}`,
+      searchParams: { q, categoria, cobertura, tipo },
+      labels: {
+        q: (value) => value,
+        ...(categories.length > 0
+          ? {
+              categoria: (value) => categories.find((item) => item.slug === value)?.name ?? value,
+            }
+          : {}),
+        ...(type === 'services' ? { cobertura: (value) => coverageMap[value] ?? value } : {}),
+        ...(type === 'opportunities' ? { tipo: (value) => opportunityMap[value] ?? value } : {}),
+      },
+    });
 
     return (
       <main className="mx-auto max-w-7xl px-6 py-10">
@@ -136,6 +155,8 @@ export function contentSection(type: PublicContentType) {
         </form>
 
         <p className="mt-6 text-sm text-gray-500">{c.resultsCount(rows.length)}</p>
+
+        <FilterChips chips={chips} />
 
         <div className="mt-3">
           <DualListing

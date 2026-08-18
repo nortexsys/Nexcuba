@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { CompanyCard } from '@/components/public/CompanyCard';
 import { DualListing } from '@/components/public/DualListing';
 import { DataTable } from '@/components/ui/DataTable';
+import { FilterChips } from '@/components/ui/FilterChips';
 import {
   countPublicProductsByCompany,
   listActiveSectors,
@@ -11,6 +12,7 @@ import {
   safeQuery,
 } from '@/lib/public/queries';
 import { getPublicClient } from '@/lib/supabase/public';
+import { filterChips } from '@/lib/url/filters';
 import { es } from '@/locales/es';
 
 export const dynamic = 'force-dynamic';
@@ -71,6 +73,18 @@ export default async function EmpresasPage({
     group.push(municipality);
     municipalitiesByProvince.set(municipality.provinceId, group);
   }
+
+  const chips = filterChips({
+    pathname: '/empresas',
+    searchParams: { q, tipo, sector, provincia, municipio },
+    labels: {
+      q: (value) => value,
+      tipo: (value) => d.entityType[value as 'mipyme'] ?? value,
+      sector: (value) => sectors.find((item) => item.slug === value)?.name ?? value,
+      provincia: (value) => provinces.find((item) => item.id === Number(value))?.name ?? value,
+      municipio: (value) => municipalities.find((item) => item.id === Number(value))?.name ?? value,
+    },
+  });
 
   const selectClass =
     'rounded-full border border-gray-300 bg-white px-4 py-2 text-sm text-ink focus:border-ink';
@@ -155,6 +169,8 @@ export default async function EmpresasPage({
       </form>
 
       <p className="mt-6 text-sm text-gray-500">{d.resultsCount(rows.length)}</p>
+
+      <FilterChips chips={chips} />
 
       <div className="mt-3">
         <DualListing

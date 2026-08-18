@@ -28,6 +28,26 @@ export const es = {
     submit: 'Buscar',
     label: 'Búsqueda general',
   },
+  searchResults: {
+    title: 'Resultados de búsqueda',
+    queryFor: (term: string) => `Resultados para «${term}»`,
+    resultsCount: (n: number) => `${n} ${n === 1 ? 'resultado' : 'resultados'}`,
+    empty: 'No hay resultados que coincidan con tu búsqueda.',
+    emptyHint: 'Prueba con otros términos: nombre de empresa, producto, servicio o sector.',
+    emptyQuery: 'Escribe un término en el buscador para encontrar empresas y contenido.',
+    groupTitles: {
+      company: 'Empresas',
+      product: 'Productos',
+      service: 'Servicios',
+      project: 'Proyectos',
+      opportunity: 'Oportunidades',
+    },
+    tableName: 'Nombre',
+    tableCompany: 'Empresa',
+    tableDate: 'Fecha',
+    description: 'Descripción',
+    viewProfile: 'Ver ficha',
+  },
   home: {
     heroTitleLine1: 'Encuentra y conoce el tejido',
     heroTitleLine2: 'empresarial cubano',
@@ -203,6 +223,8 @@ export const es = {
     verified: 'Verificada',
     premium: 'Premium',
     resultsCount: (n: number) => `${n} ${n === 1 ? 'resultado' : 'resultados'}`,
+    filterChips: 'Filtros activos',
+    removeFilter: (label: string) => `Quitar filtro ${label}`,
   },
   auth: {
     register: {

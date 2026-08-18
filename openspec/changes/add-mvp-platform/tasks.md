@@ -59,9 +59,9 @@ scaffolding. Do not skip ahead.
 
 ## H7 · Search
 
-- [ ] 7.1 FTS migration: generated `tsvector` columns ('spanish' config, unaccented) + unified `search_all(query)` RPC grouped by entity — TDD on matching/relevance basics
-- [ ] 7.2 Global search bar wiring: submit → results page grouped by 5 entity types, only approved/visible content, default `created_at DESC`, dual view per group — E2E from any screen
-- [ ] 7.3 Section search + filter chips sync to URL (shareable/back-button-safe) — TDD on URL builders
+- [x] 7.1 FTS migration: generated `tsvector` columns ('spanish' config, unaccented) + unified `search_all(query)` RPC grouped by entity — TDD on matching/relevance basics
+- [x] 7.2 Global search bar wiring: submit → results page grouped by 5 entity types, only approved/visible content, default `created_at DESC`, dual view per group — E2E from any screen
+- [x] 7.3 Section search + filter chips sync to URL (shareable/back-button-safe) — TDD on URL builders
 
 ## H8 · Networking
 
@@ -174,3 +174,32 @@ scaffolding. Do not skip ahead.
 >   overrides to exercise the defensive branches.
 > - **Known (same as H5)**: real Supabase project has no migrations applied
 >   yet — apply 0001–0010 before any demo.
+
+> **H7 build notes (2026-08-18).** Search milestone:
+> - **Migration 0011** (`search_fts`): accent folding via the project's
+>   immutable `translate` pattern (`public.fold_accent`) because `unaccent` is
+>   STABLE in PG16 and cannot feed a GENERATED column; stored `search_tsv`
+>   ('spanish') per entity + GIN index; RPC `search_all(text)` (SECURITY
+>   DEFINER, `set search_path = public`, granted to anon/authenticated only)
+>   UNION ALL across companies/products/services/projects/opportunities.
+>   Companies match base tsv + sector + territory; content matches base tsv +
+>   tags. Visibility is enforced inside the RPC: companies only
+>   `status='approved'`, content only when `is_company_content_public` and not
+>   `is_hidden`. Ordering `ts_rank DESC, created_at DESC`. Empty/whitespace
+>   query returns zero rows. SQL suite: 88 assertions in
+>   `tests/db/search.test.sql` (fixtures 14000000–14400000) — total DB suite
+>   249 tests green.
+> - **7.2 wiring**: `searchAll()` in `src/lib/public/queries.ts` (client.rpc +
+>   `safeQuery`, groups rows per entity preserving RPC order, skips empty
+>   terms); `/buscar` renders one `DualListing` per group (companies with a
+>   compact card → ficha, content groups reuse `ContentCard` → company ficha,
+>   no per-entity pages in Fase 1); graceful empty state (CI has no schema —
+>   page still renders title + term).
+> - **7.3 filter chips**: pure builders in `src/lib/url/filters.ts`
+>   (`buildHref` / `filterChips`, 6 unit tests) + `FilterChips` component of
+>   plain `<Link>`s; applied to `/empresas` and the four content sections.
+>   Each chip drops exactly one query param, so filter state is shareable and
+>   back-button safe with zero client JS.
+> - **Quality gates**: 371 unit tests, branches 90.29% (threshold 90),
+>   typecheck/lint/format clean, `npm run build` OK, e2e 26/26 (shell search
+>   test now also asserts the results heading).

@@ -486,6 +486,51 @@ async function publicCount(client: SupabaseClient, table: string): Promise<numbe
   return count ?? 0;
 }
 
+// ── global search (H7, spec search-discovery) ──────────────────────────────
+
+export type SearchEntity = 'company' | 'product' | 'service' | 'project' | 'opportunity';
+
+export interface SearchResultRow {
+  entity: SearchEntity;
+  id: string;
+  title: string;
+  description: string | null;
+  company_id: string;
+  company_name: string;
+  company_slug: string;
+  rank: number;
+  created_at: string;
+}
+
+export interface SearchGroup {
+  entity: SearchEntity;
+  items: SearchResultRow[];
+}
+
+/**
+ * Cross-entity search via the `search_all` RPC (migration 0011). The RPC only
+ * returns publicly visible rows (approved companies, published content of
+ * approved companies, nothing hidden) ordered by relevance, then by
+ * `created_at DESC` as design.md §6 requires. Rows keep that order; grouping
+ * just buckets them per entity in first-occurrence (best rank) order.
+ */
+export async function searchAll(client: SupabaseClient, query: string): Promise<SearchGroup[]> {
+  const term = query.trim();
+  if (term.length === 0) return [];
+  const { data, error } = await client.rpc('search_all', { query: term });
+  if (error) {
+    console.error('[searchAll]', error.message);
+    return [];
+  }
+  const groups = new Map<SearchEntity, SearchResultRow[]>();
+  for (const row of (data ?? []) as SearchResultRow[]) {
+    const bucket = groups.get(row.entity) ?? [];
+    bucket.push(row);
+    groups.set(row.entity, bucket);
+  }
+  return [...groups.entries()].map(([entity, items]) => ({ entity, items }));
+}
+
 export async function getHomeStats(client: SupabaseClient): Promise<HomeStats> {
   const [companies, products, services, projects, opportunities] = await Promise.all([
     publicCount(client, 'companies'),

@@ -18,6 +18,7 @@ test.describe('app shell (H1 smoke)', () => {
     await page.getByPlaceholder('Búsqueda general en nexcuba.org').fill('café');
     await page.getByRole('search').getByRole('button', { name: 'Buscar' }).click();
     await expect(page).toHaveURL(/\/buscar\?q=caf%C3%A9/);
+    await expect(page.getByRole('heading', { name: 'Resultados de búsqueda' })).toBeVisible();
     await expect(page.getByText('café')).toBeVisible();
   });
 

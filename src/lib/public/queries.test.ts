@@ -15,6 +15,7 @@ import {
   mediaPublicUrl,
   parseSocials,
   safeQuery,
+  searchAll,
 } from '@/lib/public/queries';
 
 const companyRow = {
@@ -399,6 +400,69 @@ describe('computeNetworkingRight (contacto interno gating)', () => {
     ).toBe(false);
     expect(computeNetworkingRight({ role: 'admin' })).toBe(false);
     expect(computeNetworkingRight(null)).toBe(false);
+  });
+});
+
+describe('searchAll (7.2 buscador global → RPC search_all)', () => {
+  const searchRows = [
+    {
+      entity: 'company',
+      id: 'c-1',
+      title: 'Café de Altura',
+      description: 'Tostamos café de altura.',
+      company_id: 'c-1',
+      company_name: 'Café de Altura',
+      company_slug: 'cafe-de-altura',
+      rank: 0.9,
+      created_at: '2026-01-15T00:00:00Z',
+    },
+    {
+      entity: 'product',
+      id: 'p-1',
+      title: 'Café molido',
+      description: '500 g',
+      company_id: 'c-1',
+      company_name: 'Café de Altura',
+      company_slug: 'cafe-de-altura',
+      rank: 0.8,
+      created_at: '2026-02-01T00:00:00Z',
+    },
+    {
+      entity: 'product',
+      id: 'p-2',
+      title: 'Café en grano',
+      description: 'Origen Yaguajay',
+      company_id: 'c-2',
+      company_name: 'Café del Centro',
+      company_slug: 'cafe-del-centro',
+      rank: 0.6,
+      created_at: '2026-03-01T00:00:00Z',
+    },
+  ];
+
+  it('groups RPC rows by entity preserving relevance order', async () => {
+    h = makeSupabaseClient({}, { search_all: { data: searchRows, error: null } });
+    const groups = await searchAll(h.client, 'café');
+    expect(groups.map((group) => group.entity)).toEqual(['company', 'product']);
+    expect(groups[1]?.items.map((row) => row.id)).toEqual(['p-1', 'p-2']);
+    expect(h.calls.rpc).toHaveBeenCalledWith('search_all', { query: 'café' });
+  });
+
+  it('passes the trimmed term and skips the RPC for an empty query', async () => {
+    h = makeSupabaseClient({}, { search_all: { data: searchRows, error: null } });
+    expect(await searchAll(h.client, '   ')).toEqual([]);
+    expect(await searchAll(h.client, '')).toEqual([]);
+    expect(h.calls.rpc).not.toHaveBeenCalled();
+  });
+
+  it('returns [] on RPC errors (graceful degradation)', async () => {
+    h = makeSupabaseClient({}, { search_all: { data: null, error: { message: 'boom' } } });
+    expect(await searchAll(h.client, 'café')).toEqual([]);
+  });
+
+  it('returns [] when the RPC yields no rows', async () => {
+    h = makeSupabaseClient({}, { search_all: { data: [], error: null } });
+    expect(await searchAll(h.client, 'inexistente')).toEqual([]);
   });
 });
 
