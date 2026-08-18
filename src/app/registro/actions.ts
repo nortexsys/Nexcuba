@@ -1,7 +1,9 @@
 'use server';
 
+import { headers } from 'next/headers';
 import { zodFieldErrors, type AuthFormState } from '@/lib/auth/form-state';
 import { cubanRegistrationSchema, foreignRegistrationSchema } from '@/lib/auth/schemas';
+import { clientIp, RATE_LIMIT_MESSAGE, signupLimiter } from '@/lib/server/rate-limit';
 import { getServiceClient } from '@/lib/server/supabase-service';
 import { submitCubanRegistration, submitForeignRegistration } from '@/lib/server/registration';
 import { es } from '@/locales/es';
@@ -24,6 +26,11 @@ export async function registerCubanAction(
   const parsed = cubanRegistrationSchema.safeParse(formStrings(formData, ['document']));
   if (!parsed.success) {
     return { status: 'error', fields: zodFieldErrors(parsed.error), message: REVIEW_FIELDS };
+  }
+
+  const ip = clientIp(await headers()) ?? 'unknown';
+  if (!signupLimiter.check(ip).ok) {
+    return { status: 'error', message: RATE_LIMIT_MESSAGE };
   }
 
   const file = formData.get('document');
@@ -60,6 +67,11 @@ export async function registerForeignAction(
   const parsed = foreignRegistrationSchema.safeParse(formStrings(formData));
   if (!parsed.success) {
     return { status: 'error', fields: zodFieldErrors(parsed.error), message: REVIEW_FIELDS };
+  }
+
+  const ip = clientIp(await headers()) ?? 'unknown';
+  if (!signupLimiter.check(ip).ok) {
+    return { status: 'error', message: RATE_LIMIT_MESSAGE };
   }
 
   try {

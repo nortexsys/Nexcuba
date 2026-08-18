@@ -78,9 +78,9 @@ scaffolding. Do not skip ahead.
 
 ## H10 · Verification (Fase 5 prep)
 
-- [ ] 10.1 Map every scenario of the 9 capability specs to automated tests; fill gaps until coverage ≥90% and all green
-- [ ] 10.2 Adversarial review pass (independent validator): RLS bypass attempts, IDOR on content/contact endpoints, storage abuse, rate limits, signup spam, SQL injection via search RPC
-- [ ] 10.3 Fix findings (spec update first if behavior changes — base-standards §7), then `/verify` report against acceptance criteria
+- [x] 10.1 Map every scenario of the 9 capability specs to automated tests; fill gaps until coverage ≥90% and all green
+- [x] 10.2 Adversarial review pass (independent validator): RLS bypass attempts, IDOR on content/contact endpoints, storage abuse, rate limits, signup spam, SQL injection via search RPC
+- [x] 10.3 Fix findings (spec update first if behavior changes — base-standards §7), then `/verify` report against acceptance criteria
 
 > **H3 build notes (2026-08-14).** Decisions taken during implementation,
 > recorded for traceability:
@@ -259,3 +259,46 @@ scaffolding. Do not skip ahead.
 > - **Quality gates**: 446 unit tests / 52 files, branches 90.8% (threshold
 >   90), typecheck/lint/format clean, `npm run build` OK, e2e 60/60
 >   (seo + accessibility + perf new specs; `test:db` requires psql → CI only).
+
+> **H10 build notes (2026-08-18).** Verification milestone:
+> - **10.1 gap closure**: `src/lib/server/portal/content.test.ts` gained a
+>   `content type helpers` describe (PORTAL_CONTENT_TYPES, toSingularType,
+>   isPortalContentType) plus `createOwnContent` cases: pending/rejected denied,
+>   mipyme approved / foreign PREMIUM publish, generic error when the right
+>   lookup fails. New `src/lib/supabase/public.test.ts` covers the public
+>   client (correct env, no-auth + `db.retry:false`, cache, degradation to the
+>   dead-URL fallback). Fix: `as unknown as { url; key; options }` cast keeps
+>   `tsc` clean.
+> - **10.2 adversarial suite** `tests/db/adversarial.test.sql` (24 asserts, runs
+>   second after `rls.test.sql`): RLS enabled on the 10 tables, IDOR A→B
+>   (service update/delete no-ops, hidden/pending products invisible,
+>   role-escalation via profile update ineffective, foreign notifications
+>   invisible — asserted as superuser because A cannot see B's row), IDOR B→A
+>   on products, `service_role` bypass (sees hidden/pending, inserts), anon
+>   still respects the RLS matrix right after, SQL injection against
+>   `search_all` (`'); drop table public.companies; --`, `' OR 1=1 --`,
+>   `cafe'; select pg_sleep(999); --` → 0 rows, table intact). Storage abuse
+>   is enforced by the no-op storage policies (migration 0007) and asserted
+>   conditionally (`if exists schema storage`) + raise notice — documented as
+>   "verified by inspection + conditional assert" for the flat-Postgres CI.
+> - **Rate limiting** (10.2): in-memory fixed-window
+>   `src/lib/server/rate-limit.ts` (`createRateLimiter`, structural
+>   `RateLimitHeaders` to avoid a Next deep-import, `clientIp` from
+>   X-Forwarded-For → X-Real-IP, `RATE_LIMIT_MESSAGE`, shared
+>   signup/login/reset/contact limiters) — 11 unit tests, 100% coverage. design.md
+>   calls for Upstash Redis/Vercel KV in production (documented in the module).
+>   Wired into the 4 server actions (`/registro` ×2, `/acceso`, `/recuperar`,
+>   `/portal/contactos`) via `clientIp(await headers()) ?? 'unknown'`, checked
+>   after schema validation, before expensive work. `src/app/**` stays out of the
+>   unit gate (e2e coverage), so the limiter lives in `src/lib/server/`.
+> - **Flaky-fix**: `ProfileForm (6.2) submits profile fields` and the RTL
+>   `findBy*` calls could time out under heavy parallel load (5000ms vitest
+>   default / 1000ms RTL default). Fixed globally in `vitest.setup.ts`
+>   (`configure({ asyncUtilTimeout: 5000 })`) plus a 15s timeout on the
+>   interaction-heavy ProfileForm submit test. Re-run: 465 tests / 54 files
+>   green, branches 90.99% (threshold 90).
+> - **Quality gates**: 465 unit tests / 54 files, branches 90.99% (threshold
+>   90), statements 97.76 / functions 93.75 / lines 97.76, typecheck/lint/format
+>   clean, `npm run build` OK, e2e 60/60 with dead env. DB suite local:
+>   rls 41 · adversarial 24 · backoffice · networking · portal · search →
+>   122 passed, 0 failed.

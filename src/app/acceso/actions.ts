@@ -1,10 +1,12 @@
 'use server';
 
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { zodFieldErrors, type AuthFormState } from '@/lib/auth/form-state';
 import { decideLoginDestination, type SessionProfile } from '@/lib/auth/session';
 import { completePasswordReset } from '@/lib/server/account';
+import { clientIp, loginLimiter, RATE_LIMIT_MESSAGE } from '@/lib/server/rate-limit';
 import { getServerClient } from '@/lib/supabase/server';
 import { es } from '@/locales/es';
 
@@ -31,6 +33,11 @@ export async function loginAction(
   const parsed = loginSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     return { status: 'error', fields: zodFieldErrors(parsed.error), message: REVIEW_FIELDS };
+  }
+
+  const ip = clientIp(await headers()) ?? 'unknown';
+  if (!loginLimiter.check(ip).ok) {
+    return { status: 'error', message: RATE_LIMIT_MESSAGE };
   }
 
   const supabase = await getServerClient();

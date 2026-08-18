@@ -1,9 +1,11 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
 import type { AdminActionState } from '@/lib/admin/form';
 import { passwordSchema } from '@/lib/auth/schemas';
 import { requestEmailChange } from '@/lib/server/account';
+import { clientIp, contactLimiter, RATE_LIMIT_MESSAGE } from '@/lib/server/rate-limit';
 import {
   addOwnContentImage,
   createOwnContent,
@@ -281,6 +283,11 @@ export async function sendContactRequestAction(
 ): Promise<AdminActionState> {
   const companyId = await requireCompanyId();
   if (!companyId) return NO_SESSION;
+
+  const ip = clientIp(await headers()) ?? 'unknown';
+  if (!contactLimiter.check(ip).ok) {
+    return { status: 'error', message: RATE_LIMIT_MESSAGE };
+  }
 
   const supabase = await getServerClient();
   const result = await sendContactRequest(

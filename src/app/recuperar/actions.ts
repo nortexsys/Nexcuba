@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import { z } from 'zod';
 import { zodFieldErrors, type AuthFormState } from '@/lib/auth/form-state';
 import { requestPasswordReset } from '@/lib/server/account';
+import { clientIp, RATE_LIMIT_MESSAGE, resetLimiter } from '@/lib/server/rate-limit';
 import { getServerClient } from '@/lib/supabase/server';
 
 const emailSchema = z
@@ -27,6 +28,11 @@ export async function requestResetAction(
   const parsed = emailSchema.safeParse(Object.fromEntries(formData).email);
   if (!parsed.success) {
     return { status: 'error', fields: zodFieldErrors(parsed.error) };
+  }
+
+  const ip = clientIp(await headers()) ?? 'unknown';
+  if (!resetLimiter.check(ip).ok) {
+    return { status: 'error', message: RATE_LIMIT_MESSAGE };
   }
 
   const supabase = await getServerClient();

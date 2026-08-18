@@ -104,7 +104,7 @@ describe('ProfileForm (6.2)', () => {
     await user.type(screen.getAllByLabelText(c.company.socialUrl)[1]!, 'https://facebook.com/x');
     await user.click(screen.getByRole('button', { name: c.company.save }));
     expect(action).toHaveBeenCalledTimes(1);
-  });
+  }, 15000);
 
   it('adds and removes social rows', async () => {
     const user = userEvent.setup();

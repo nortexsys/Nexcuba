@@ -4,8 +4,11 @@ import {
   addOwnContentImage,
   createOwnContent,
   deleteOwnContent,
+  isPortalContentType,
   listOwnContent,
+  PORTAL_CONTENT_TYPES,
   removeOwnContentImage,
+  toSingularType,
   updateOwnContent,
 } from '@/lib/server/portal/content';
 
@@ -125,10 +128,43 @@ describe('createOwnContent (6.3: pre-check de derecho a publicar)', () => {
     expect(h.calls.inserts['products']).toBeUndefined();
   });
 
-  it('lets a foreign company with active premium publish', async () => {
+  it('blocks cuban companies whose status is pending or rejected', async () => {
+    h = makeSupabaseClient({ companies: { row: { entity_type: 'mipyme', status: 'pending' } } });
+    const pending = await createOwnContent(h.client, 'c-1', 'products', baseInput);
+    expect(pending.ok).toBe(false);
+    if (!pending.ok) expect(pending.message).toContain('Premium');
+    expect(h.calls.inserts['products']).toBeUndefined();
+
+    h = makeSupabaseClient({
+      companies: { row: { entity_type: 'cooperative', status: 'rejected' } },
+    });
+    const rejected = await createOwnContent(h.client, 'c-1', 'services', baseInput);
+    expect(rejected.ok).toBe(false);
+    expect(h.calls.inserts['services']).toBeUndefined();
+  });
+
+  it('lets an approved cuban company and an active-premium foreign company publish', async () => {
+    h = makeSupabaseClient({ companies: { row: companyRow('mipyme') } });
+    expect(await createOwnContent(h.client, 'c-1', 'products', baseInput)).toEqual({
+      ok: true,
+      id: 'products-gen-1',
+    });
+
     h = makeSupabaseClient({ companies: { row: companyRow('foreign', '2999-01-01T00:00:00Z') } });
+    expect(await createOwnContent(h.client, 'c-1', 'products', baseInput)).toEqual({
+      ok: true,
+      id: 'products-gen-1',
+    });
+  });
+
+  it('reports the generic error when the publishing-right lookup fails', async () => {
+    h = makeSupabaseClient({ companies: { error: { message: 'boom' } } });
     const result = await createOwnContent(h.client, 'c-1', 'products', baseInput);
-    expect(result).toEqual({ ok: true, id: 'products-gen-1' });
+    expect(result).toEqual({
+      ok: false,
+      message: 'No se pudo verificar tu derecho de publicación. Inténtalo de nuevo.',
+    });
+    expect(h.calls.inserts['products']).toBeUndefined();
   });
 
   it('validates name, coverage and opportunity type per content type', async () => {
@@ -282,5 +318,25 @@ describe('removeOwnContentImage (6.3)', () => {
     expect(result).toEqual({ ok: true });
     expect(h.calls.storageRemovals['media']).toContainEqual(['c-1/product/p-1/a.jpg']);
     expect(h.calls.deletes['images']).toContain('i-1');
+  });
+});
+
+describe('content type helpers (10.1: PUBLIC/CONTENT mapping)', () => {
+  it('PORTAL_CONTENT_TYPES covers the four portal content tables', () => {
+    expect(PORTAL_CONTENT_TYPES).toEqual(['products', 'services', 'projects', 'opportunities']);
+  });
+
+  it('maps each plural type to its singular content_type', () => {
+    expect(toSingularType('products')).toBe('product');
+    expect(toSingularType('services')).toBe('service');
+    expect(toSingularType('projects')).toBe('project');
+    expect(toSingularType('opportunities')).toBe('opportunity');
+  });
+
+  it('isPortalContentType guards values', () => {
+    expect(isPortalContentType('products')).toBe(true);
+    expect(isPortalContentType('opportunities')).toBe(true);
+    expect(isPortalContentType('companies')).toBe(false);
+    expect(isPortalContentType('')).toBe(false);
   });
 });
