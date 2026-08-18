@@ -1,5 +1,7 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/Badge';
+import { applyMediaTransform } from '@/lib/public/queries';
 import type { PublicCompanyCard } from '@/lib/public/queries';
 import { es } from '@/locales/es';
 
@@ -24,9 +26,13 @@ export function CompanyCard({
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           {company.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={company.logoUrl}
+            <Image
+              src={applyMediaTransform(company.logoUrl, {
+                width: 96,
+                height: 96,
+                resize: 'cover',
+                quality: 80,
+              })}
               alt=""
               width={48}
               height={48}

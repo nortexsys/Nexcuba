@@ -63,7 +63,7 @@ export function Footer() {
           <FooterLinkColumn title={es.footer.legalTitle} links={legalLinks} />
         </div>
         <div className="mt-10 border-t border-gray-200 pt-6">
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-600">
             {es.footer.copyright} ·{' '}
             {legalLinks.map((link, index) => (
               <span key={link.href}>

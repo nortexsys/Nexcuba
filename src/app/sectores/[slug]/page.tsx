@@ -2,16 +2,31 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { CompanyCard } from '@/components/public/CompanyCard';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { DualListing } from '@/components/public/DualListing';
 import { DataTable } from '@/components/ui/DataTable';
-import { getSectorBySlug, listPublicCompanies, safeQuery } from '@/lib/public/queries';
+import {
+  getSectorBySlug,
+  listActiveSectors,
+  listPublicCompanies,
+  safeQuery,
+} from '@/lib/public/queries';
+import { seoMetadata } from '@/lib/seo/meta';
+import { breadcrumbJsonLd } from '@/lib/seo/json-ld';
 import { getPublicClient } from '@/lib/supabase/public';
 import { es } from '@/locales/es';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 const s = es.public.sectors;
 const d = es.public.directory;
+
+/** ISR (H9 §9.4): pre-render known sectors; with no DB reachable at build
+    time this returns [], leaving the route on-demand. */
+export async function generateStaticParams() {
+  const sectors = await safeQuery(() => listActiveSectors(getPublicClient()), []);
+  return sectors.map((sector) => ({ slug: sector.slug }));
+}
 
 export async function generateMetadata({
   params,
@@ -20,7 +35,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const sector = await safeQuery(() => getSectorBySlug(getPublicClient(), slug), null);
-  return { title: sector ? `${sector.name} · ${es.brand.name}` : s.notFound };
+  if (!sector) return { title: s.notFound };
+  return seoMetadata({
+    title: sector.name,
+    description: s.companiesIn(sector.name, 1),
+    path: `/sectores/${sector.slug}`,
+  });
 }
 
 /**
@@ -39,18 +59,24 @@ export default async function SectorPage({ params }: { params: Promise<{ slug: s
   if (rows.length === 0) notFound();
 
   return (
-    <main className="mx-auto max-w-7xl px-6 py-10">
+    <div className="mx-auto max-w-7xl px-6 py-10">
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: d.title, path: '/empresas' },
+          { name: sector.name, path: `/sectores/${sector.slug}` },
+        ])}
+      />
       <p className="text-sm">
-        <Link href="/" className="text-gray-500 underline hover:text-ink">
+        <Link href="/" className="text-gray-600 underline hover:text-ink">
           {es.brand.name}
         </Link>{' '}
         /{' '}
-        <Link href="/empresas" className="text-gray-500 underline hover:text-ink">
+        <Link href="/empresas" className="text-gray-600 underline hover:text-ink">
           {d.title}
         </Link>
       </p>
       <h1 className="mt-2 text-3xl font-bold text-ink">{sector.name}</h1>
-      <p className="mt-1 text-sm text-gray-500">{s.companiesIn(sector.name, rows.length)}</p>
+      <p className="mt-1 text-sm text-gray-600">{s.companiesIn(sector.name, rows.length)}</p>
 
       <div className="mt-6">
         <DualListing
@@ -89,6 +115,6 @@ export default async function SectorPage({ params }: { params: Promise<{ slug: s
           }
         />
       </div>
-    </main>
+    </div>
   );
 }

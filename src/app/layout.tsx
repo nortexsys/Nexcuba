@@ -3,6 +3,8 @@ import { Plus_Jakarta_Sans } from 'next/font/google';
 import { Footer } from '@/components/layout/Footer';
 import { Header } from '@/components/layout/Header';
 import { SearchBar } from '@/components/layout/SearchBar';
+import { SITE_NAME, SITE_DESCRIPTION } from '@/lib/seo/meta';
+import { SITE_URL } from '@/lib/seo/site';
 import { es } from '@/locales/es';
 import './globals.css';
 
@@ -13,11 +15,20 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: `${es.brand.name} — ${es.brand.tagline}`,
     template: `%s · ${es.brand.name}`,
   },
-  description: es.footer.description,
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    siteName: SITE_NAME,
+    locale: 'es_ES',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -148,7 +148,7 @@ describe('GalleryManager (6.2)', () => {
 
     expect(screen.getByRole('img', { name: 'Logo' })).toHaveAttribute(
       'src',
-      'https://media.example/media/a.jpg',
+      'https://media.example/media/a.jpg?width=480&resize=cover&quality=80',
     );
     await user.upload(
       screen.getByLabelText(c.gallery.add),

@@ -1,17 +1,20 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ForeignRegistrationForm } from '@/components/auth/ForeignRegistrationForm';
+import { seoMetadata } from '@/lib/seo/meta';
 import { es } from '@/locales/es';
 
 import { registerForeignAction } from '../actions';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = seoMetadata({
   title: `${es.auth.register.foreignTitle} · ${es.brand.name}`,
-};
+  description: es.seo.auth.registerForeign.description,
+  path: '/registro/extranjera',
+});
 
 export default function RegistroExtranjeraPage() {
   return (
-    <main className="mx-auto max-w-2xl px-6 py-12">
+    <div className="mx-auto max-w-2xl px-6 py-12">
       <h1 className="text-3xl font-bold text-ink">{es.auth.register.foreignTitle}</h1>
       <p className="mt-2 text-base text-gray-600">{es.auth.register.foreignSubtitle}</p>
 
@@ -24,6 +27,6 @@ export default function RegistroExtranjeraPage() {
           {es.auth.register.cubanLink}
         </Link>
       </p>
-    </main>
+    </div>
   );
 }

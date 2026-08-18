@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeSupabaseClient } from '@/test/supabase-mock';
 import {
+  applyMediaTransform,
   computeNetworkingRight,
   countPublicProductsByCompany,
   getFeaturedCompanies,
@@ -153,6 +154,31 @@ describe('mediaPublicUrl', () => {
     expect(mediaPublicUrl(h.client, 'c-1/logo.jpg')).toBe(
       'https://media.example/media/c-1/logo.jpg',
     );
+  });
+
+  it('appends CDN transform params when requested', () => {
+    expect(
+      mediaPublicUrl(h.client, 'c-1/logo.jpg', {
+        width: 96,
+        height: 96,
+        resize: 'cover',
+        format: 'webp',
+        quality: 80,
+      }),
+    ).toBe(
+      'https://media.example/media/c-1/logo.jpg?width=96&height=96&resize=cover&quality=80&format=webp',
+    );
+  });
+
+  it('merges transforms with an existing query string', () => {
+    expect(applyMediaTransform('https://cdn.example/a.png?v=1', { width: 320 })).toBe(
+      'https://cdn.example/a.png?v=1&width=320',
+    );
+  });
+
+  it('returns the URL untouched without options', () => {
+    const url = 'https://cdn.example/a.png';
+    expect(applyMediaTransform(url)).toBe(url);
   });
 });
 

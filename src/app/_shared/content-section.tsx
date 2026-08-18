@@ -83,9 +83,9 @@ export function contentSection(type: PublicContentType) {
     });
 
     return (
-      <main className="mx-auto max-w-7xl px-6 py-10">
+      <div className="mx-auto max-w-7xl px-6 py-10">
         <h1 className="text-3xl font-bold text-ink">{copy.title}</h1>
-        <p className="mt-1 text-sm text-gray-500">{copy.subtitle}</p>
+        <p className="mt-1 text-sm text-gray-600">{copy.subtitle}</p>
 
         <form
           method="get"
@@ -148,13 +148,13 @@ export function contentSection(type: PublicContentType) {
             >
               {c.apply}
             </button>
-            <Link href={`/${type}`} className="text-xs text-gray-500 underline hover:text-ink">
+            <Link href={`/${type}`} className="text-xs text-gray-600 underline hover:text-ink">
               {es.public.directory.reset}
             </Link>
           </div>
         </form>
 
-        <p className="mt-6 text-sm text-gray-500">{c.resultsCount(rows.length)}</p>
+        <p className="mt-6 text-sm text-gray-600">{c.resultsCount(rows.length)}</p>
 
         <FilterChips chips={chips} />
 
@@ -163,7 +163,7 @@ export function contentSection(type: PublicContentType) {
             sectionKey={type}
             cards={
               rows.length === 0 ? (
-                <p className="rounded-card border border-gray-100 bg-white p-6 text-sm text-gray-500">
+                <p className="rounded-card border border-gray-100 bg-white p-6 text-sm text-gray-600">
                   {c.empty}
                 </p>
               ) : (
@@ -222,7 +222,7 @@ export function contentSection(type: PublicContentType) {
             }
           />
         </div>
-      </main>
+      </div>
     );
   }
 

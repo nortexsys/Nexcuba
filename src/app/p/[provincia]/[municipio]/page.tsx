@@ -2,24 +2,40 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { CompanyCard } from '@/components/public/CompanyCard';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { DualListing } from '@/components/public/DualListing';
 import { DataTable } from '@/components/ui/DataTable';
 import {
   getMunicipalityBySlug,
   getProvinceBySlug,
+  listMunicipalities,
+  listProvinces,
   listPublicCompanies,
   safeQuery,
 } from '@/lib/public/queries';
+import { seoMetadata } from '@/lib/seo/meta';
+import { breadcrumbJsonLd } from '@/lib/seo/json-ld';
 import { getPublicClient } from '@/lib/supabase/public';
 import { es } from '@/locales/es';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 const t = es.public.territory;
 const d = es.public.directory;
 
 interface Params {
   params: Promise<{ provincia: string; municipio: string }>;
+}
+
+/** ISR (H9 §9.4): pre-render known municipalities; with no DB reachable at
+    build time this returns [], leaving the route on-demand. */
+export async function generateStaticParams(): Promise<{ provincia: string; municipio: string }[]> {
+  const municipalities = await safeQuery(() => listMunicipalities(getPublicClient()), []);
+  const provinces = await safeQuery(() => listProvinces(getPublicClient()), []);
+  const provinceSlug = new Map(provinces.map((p) => [p.id, p.slug]));
+  return municipalities
+    .filter((m) => provinceSlug.has(m.provinceId))
+    .map((m) => ({ provincia: provinceSlug.get(m.provinceId) as string, municipio: m.slug }));
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
@@ -30,9 +46,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     safeQuery(() => getMunicipalityBySlug(client, municipio), null),
   ]);
   const valid = province && municipality && municipality.provinceId === province.id;
-  return {
-    title: valid ? `${municipality.name}, ${province.name} · ${es.brand.name}` : t.notFound,
-  };
+  if (!valid) return { title: t.notFound };
+  return seoMetadata({
+    title: `${municipality.name}, ${province.name}`,
+    description: t.companiesIn(municipality.name, 1),
+    path: `/p/${province.slug}/${municipality.slug}`,
+  });
 }
 
 /**
@@ -57,20 +76,27 @@ export default async function MunicipalityPage({ params }: Params) {
   if (rows.length === 0) notFound();
 
   return (
-    <main className="mx-auto max-w-7xl px-6 py-10">
+    <div className="mx-auto max-w-7xl px-6 py-10">
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: d.title, path: '/empresas' },
+          { name: province.name, path: `/p/${province.slug}` },
+          { name: municipality.name, path: `/p/${province.slug}/${municipality.slug}` },
+        ])}
+      />
       <p className="text-sm">
-        <Link href="/" className="text-gray-500 underline hover:text-ink">
+        <Link href="/" className="text-gray-600 underline hover:text-ink">
           {es.brand.name}
         </Link>{' '}
         /{' '}
-        <Link href={`/p/${province.slug}`} className="text-gray-500 underline hover:text-ink">
+        <Link href={`/p/${province.slug}`} className="text-gray-600 underline hover:text-ink">
           {province.name}
         </Link>
       </p>
       <h1 className="mt-2 text-3xl font-bold text-ink">
         {municipality.name}, {province.name}
       </h1>
-      <p className="mt-1 text-sm text-gray-500">{t.companiesIn(municipality.name, rows.length)}</p>
+      <p className="mt-1 text-sm text-gray-600">{t.companiesIn(municipality.name, rows.length)}</p>
 
       <div className="mt-6">
         <DualListing
@@ -103,6 +129,6 @@ export default async function MunicipalityPage({ params }: Params) {
           }
         />
       </div>
-    </main>
+    </div>
   );
 }

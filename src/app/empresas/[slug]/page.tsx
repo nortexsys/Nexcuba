@@ -1,17 +1,22 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ContentCard } from '@/components/public/ContentCard';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import {
   computeNetworkingRight,
+  applyMediaTransform,
   getPublicCompanyBySlug,
   listCompanyGallery,
   listCompanyPublishedContent,
   safeQuery,
   type PublicContentType,
 } from '@/lib/public/queries';
+import { seoMetadata } from '@/lib/seo/meta';
+import { breadcrumbJsonLd, companyProfileJsonLd } from '@/lib/seo/json-ld';
 import { getPublicClient } from '@/lib/supabase/public';
 import { getServerClient } from '@/lib/supabase/server';
 import { es } from '@/locales/es';
@@ -28,7 +33,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const company = await safeQuery(() => getPublicCompanyBySlug(getPublicClient(), slug), null);
-  return { title: company ? `${company.name} · ${es.brand.name}` : f.notFound };
+  if (!company) return { title: f.notFound };
+  return seoMetadata({
+    title: company.name,
+    description: company.description ?? d.subtitle,
+    path: `/empresas/${company.slug}`,
+    image: company.logoUrl,
+    type: 'profile',
+  });
 }
 
 /** Public company ficha (task 5.3, spec public-directory: ficha §9 completa). */
@@ -84,14 +96,33 @@ export default async function CompanyPage({ params }: { params: Promise<{ slug: 
   const hasContent = contentGroups.some((group) => group.items.length > 0);
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-10">
+    <div className="mx-auto max-w-5xl px-6 py-10">
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: d.title, path: '/empresas' },
+          { name: company.name, path: `/empresas/${company.slug}` },
+        ])}
+      />
+      <JsonLd
+        data={companyProfileJsonLd({
+          name: company.name,
+          slug: company.slug,
+          description: company.description,
+          logo: company.logoUrl,
+          municipalityName: company.municipalityName,
+        })}
+      />
       {/* Cabecera */}
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-4">
           {company.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={company.logoUrl}
+            <Image
+              src={applyMediaTransform(company.logoUrl, {
+                width: 144,
+                height: 144,
+                resize: 'cover',
+                quality: 80,
+              })}
               alt=""
               width={72}
               height={72}
@@ -217,8 +248,19 @@ export default async function CompanyPage({ params }: { params: Promise<{ slug: 
           <ul className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {gallery.map((image) => (
               <li key={image.url} className="overflow-hidden rounded-2xl border border-gray-100">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={image.url} alt={image.alt ?? ''} className="h-32 w-full object-cover" />
+                <Image
+                  src={applyMediaTransform(image.url, {
+                    width: 640,
+                    height: 320,
+                    resize: 'cover',
+                    quality: 80,
+                  })}
+                  alt={image.alt ?? ''}
+                  width={640}
+                  height={320}
+                  className="h-32 w-full object-cover"
+                  sizes="(max-width: 640px) 50vw, 25vw"
+                />
               </li>
             ))}
           </ul>
@@ -253,6 +295,6 @@ export default async function CompanyPage({ params }: { params: Promise<{ slug: 
           ← {d.title}
         </Link>
       </p>
-    </main>
+    </div>
   );
 }

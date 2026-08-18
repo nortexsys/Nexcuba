@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState } from 'react';
 import { initialAdminActionState } from '@/lib/admin/form';
+import { applyMediaTransform } from '@/lib/public/queries';
 import { es } from '@/locales/es';
 import type { PortalAction } from '@/components/portal/ProfileForm';
 
@@ -429,7 +430,11 @@ function ContentImageThumb({
   return (
     <li className="overflow-hidden rounded-card border border-gray-100 bg-white">
       {/* eslint-disable-next-line @next/next/no-img-element -- portal manager: arbitrary user URLs */}
-      <img src={image.url} alt={image.alt ?? ''} className="aspect-[4/3] w-full object-cover" />
+      <img
+        src={applyMediaTransform(image.url, { width: 480, resize: 'cover', quality: 80 })}
+        alt={image.alt ?? ''}
+        className="aspect-[4/3] w-full object-cover"
+      />
       <form action={removeFormAction} className="p-1">
         <input type="hidden" name="type" value={type} />
         <input type="hidden" name="imageId" value={image.id} />

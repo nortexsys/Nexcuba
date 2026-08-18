@@ -13,13 +13,17 @@ import {
   type SearchResultRow,
 } from '@/lib/public/queries';
 import { getPublicClient } from '@/lib/supabase/public';
+import { seoMetadata } from '@/lib/seo/meta';
 import { es } from '@/locales/es';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = seoMetadata({
   title: es.searchResults.title,
-};
+  description: es.seo.search.description,
+  path: '/buscar',
+  noindex: true,
+});
 
 const s = es.searchResults;
 
@@ -137,22 +141,22 @@ export default async function SearchPage({
   const total = groups.reduce((sum, group) => sum + group.items.length, 0);
 
   return (
-    <main className="mx-auto max-w-7xl px-6 py-10">
+    <div className="mx-auto max-w-7xl px-6 py-10">
       <h1 className="text-3xl font-bold text-ink">{s.title}</h1>
-      <p className="mt-1 text-sm text-gray-500">{q ? s.queryFor(q) : s.emptyQuery}</p>
-      <p className="mt-6 text-sm text-gray-500">{s.resultsCount(total)}</p>
+      <p className="mt-1 text-sm text-gray-600">{q ? s.queryFor(q) : s.emptyQuery}</p>
+      <p className="mt-6 text-sm text-gray-600">{s.resultsCount(total)}</p>
 
       <div className="mt-3 grid gap-8">
         {groups.map((group) => (
           <GroupSection key={group.entity} group={group} />
         ))}
         {groups.length === 0 && (
-          <div className="rounded-card border border-gray-100 bg-white p-6 text-sm text-gray-500">
+          <div className="rounded-card border border-gray-100 bg-white p-6 text-sm text-gray-600">
             {s.empty}
             <p className="mt-1 text-xs text-gray-400">{s.emptyHint}</p>
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }

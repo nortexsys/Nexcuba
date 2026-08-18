@@ -30,7 +30,9 @@ test.describe('app shell (H1 smoke)', () => {
     const isMobile = await burger.isVisible();
     if (isMobile) await burger.click();
 
-    const nav = page.getByRole('navigation', { name: isMobile ? 'Principal móvil' : 'Principal' });
+    const nav = page.getByRole('navigation', {
+      name: isMobile ? 'Menú de navegación' : 'Principal',
+    });
     for (const label of ['Empresas', 'Productos', 'Servicios', 'Proyectos', 'Oportunidades']) {
       await expect(nav.getByRole('link', { name: label })).toBeVisible();
     }

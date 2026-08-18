@@ -36,7 +36,7 @@ describe('Header', () => {
     const open = screen.getByRole('button', { name: es.header.openMenu });
     await user.click(open);
 
-    const mobileNav = screen.getByRole('navigation', { name: 'Principal móvil' });
+    const mobileNav = screen.getByRole('navigation', { name: 'Menú de navegación' });
     for (const label of Object.values(es.header.nav)) {
       expect(within(mobileNav).getByRole('link', { name: label })).toBeInTheDocument();
     }
@@ -45,12 +45,12 @@ describe('Header', () => {
 
     // A nav link closes the menu (aria-expanded flips back).
     await user.click(within(mobileNav).getByRole('link', { name: es.header.nav.companies }));
-    expect(screen.queryByRole('navigation', { name: 'Principal móvil' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Menú de navegación' })).not.toBeInTheDocument();
 
     // Reopen and close explicitly with the X button.
     await user.click(screen.getByRole('button', { name: es.header.openMenu }));
     await user.click(screen.getByRole('button', { name: es.header.closeMenu }));
-    expect(screen.queryByRole('navigation', { name: 'Principal móvil' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Menú de navegación' })).not.toBeInTheDocument();
   });
 });
 

@@ -23,7 +23,13 @@ describe('CompanyCard branch coverage', () => {
     const { container } = render(<CompanyCard company={full} />);
     const img = container.querySelector('img');
     expect(img).not.toBeNull();
-    expect(img?.getAttribute('src')).toBe(full.logoUrl); // decorative: alt=""
+    // next/image serves the CDN-transformed URL through the optimizer.
+    const src = img?.getAttribute('src');
+    expect(src).toContain(
+      encodeURIComponent(
+        'https://media.example/media/c-1/logo.jpg?width=96&height=96&resize=cover&quality=80',
+      ),
+    );
   });
 
   it('hides description/sector blocks and falls back on empty fields', () => {

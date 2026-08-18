@@ -21,6 +21,8 @@ export const es = {
     register: 'Registrar Empresa',
     openMenu: 'Abrir menú',
     closeMenu: 'Cerrar menú',
+    navLabel: 'Principal',
+    navLabelMobile: 'Menú de navegación',
   },
   search: {
     region: 'Buscador',
@@ -671,6 +673,31 @@ export const es = {
         },
         empty: 'Ninguna empresa tiene ficha CRM todavía.',
         openCompany: 'Abrir ficha',
+      },
+    },
+  },
+  seo: {
+    search: {
+      description:
+        'Busca entre MIPYMES, cooperativas cubanas y empresas extranjeras: empresas, productos, servicios, proyectos y oportunidades.',
+    },
+    auth: {
+      login: {
+        description: 'Inicia sesión en NexCuba para gestionar tu empresa y conectar con otras.',
+      },
+      register: {
+        description:
+          'Registra tu MIPYME o cooperativa cubana en el directorio NexCuba y da visibilidad a tu empresa.',
+      },
+      registerForeign: {
+        description:
+          'Registra tu empresa extranjera interesada en el mercado cubano en el directorio NexCuba.',
+      },
+      recover: {
+        description: 'Recupera tu contraseña de NexCuba para volver a acceder a tu cuenta.',
+      },
+      reset: {
+        description: 'Define una nueva contraseña para tu cuenta de NexCuba.',
       },
     },
   },

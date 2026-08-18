@@ -29,7 +29,7 @@ export function Header() {
           <span className="text-lg font-bold text-ink">{es.brand.name}</span>
         </Link>
 
-        <nav aria-label="Principal" className="hidden items-center gap-8 md:flex">
+        <nav aria-label={es.header.navLabel} className="hidden items-center gap-8 md:flex">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -73,7 +73,7 @@ export function Header() {
 
       {menuOpen && (
         <nav
-          aria-label="Principal móvil"
+          aria-label={es.header.navLabelMobile}
           className="border-t border-gray-100 bg-white px-6 pb-4 pt-2 md:hidden"
         >
           <ul className="flex flex-col gap-1">

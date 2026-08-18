@@ -28,8 +28,40 @@ export async function safeQuery<T>(fn: () => Promise<T>, fallback: T): Promise<T
 
 // ── media ─────────────────────────────────────────────────────────────────────
 
-export function mediaPublicUrl(client: SupabaseClient, path: string): string {
-  return client.storage.from('media').getPublicUrl(path).data.publicUrl;
+export interface MediaTransformOptions {
+  width?: number;
+  height?: number;
+  resize?: 'cover' | 'contain' | 'inside';
+  quality?: number;
+  format?: 'webp' | 'avif' | 'origin';
+}
+
+/**
+ * Appends Supabase Storage CDN transform params to a public URL (H9 §9.4).
+ * Pure helper so components can resize already-built URLs and unit tests can
+ * assert the exact query string.
+ */
+export function applyMediaTransform(url: string, options?: MediaTransformOptions): string {
+  if (!options) return url;
+  const params = new URLSearchParams();
+  if (options.width) params.set('width', String(options.width));
+  if (options.height) params.set('height', String(options.height));
+  if (options.resize) params.set('resize', options.resize);
+  if (options.quality) params.set('quality', String(options.quality));
+  if (options.format) params.set('format', options.format);
+  const query = params.toString();
+  if (!query) return url;
+  const [base, existing] = url.split('?');
+  return existing ? `${base}?${existing}&${query}` : `${url}?${query}`;
+}
+
+export function mediaPublicUrl(
+  client: SupabaseClient,
+  path: string,
+  options?: MediaTransformOptions,
+): string {
+  const url = client.storage.from('media').getPublicUrl(path).data.publicUrl;
+  return applyMediaTransform(url, options);
 }
 
 export interface SocialLink {

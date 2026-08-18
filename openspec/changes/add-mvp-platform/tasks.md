@@ -71,10 +71,10 @@ scaffolding. Do not skip ahead.
 
 ## H9 · SEO, a11y, performance
 
-- [ ] 9.1 Metadata API everywhere: titles/descriptions/canonical/OG per route; JSON-LD (Organization, BreadcrumbList, WebSite+SearchAction)
-- [ ] 9.2 `sitemap.ts` (entities + taxonomy pages, paginated index) + `robots.ts`; noindex rules for thin pages
-- [ ] 9.3 Accessibility pass (WCAG 2.1 AA essentials: landmarks, labels, contrast — verify gold-on-dark ratios, focus states) + axe tests in Playwright
-- [ ] 9.4 Performance pass: image CDN transforms, ISR for public pages, font optimization; Lighthouse ≥90 on home/directory/profile — CI budget check
+- [x] 9.1 Metadata API everywhere: titles/descriptions/canonical/OG per route; JSON-LD (Organization, BreadcrumbList, WebSite+SearchAction)
+- [x] 9.2 `sitemap.ts` (entities + taxonomy pages, paginated index) + `robots.ts`; noindex rules for thin pages
+- [x] 9.3 Accessibility pass (WCAG 2.1 AA essentials: landmarks, labels, contrast — verify gold-on-dark ratios, focus states) + axe tests in Playwright
+- [x] 9.4 Performance pass: image CDN transforms, ISR for public pages, font optimization; Lighthouse ≥90 on home/directory/profile — CI budget check
 
 ## H10 · Verification (Fase 5 prep)
 
@@ -229,3 +229,33 @@ scaffolding. Do not skip ahead.
 > - **Quality gates**: 405 unit tests / 48 files, branches 90.49% (threshold
 >   90), typecheck/lint/format clean, `npm run build` OK, e2e 26/26 (auth-guards
 >   now iterates `/portal`, `/portal/notificaciones`, `/portal/contactos`).
+
+> **H9 build notes (2026-08-18).** SEO, a11y + performance milestone:
+> - **9.1** logic lives in `src/lib/seo/` (site/meta/json-ld, unit-tested —
+>   coverage excludes `src/app/**`); `src/app/sitemap.ts` only orchestrates with
+>   `safeQuery`. JSON-LD rendered via `<script type="application/ld+json">`
+>   (`JsonLd`), props typed `object`. The root `<main>` in the layout wraps
+>   `{children}`, so all public pages render a `<div>` to keep one `main`
+>   landmark. `noindex` only on `/buscar` (thin/duplicate-prone); auth pages get
+>   description + canonical but stay indexable.
+> - **9.2** single `sitemap.ts` (Next auto-paginates at scale) + `robots.ts`
+>   (disallow `/portal /admin /buscar /acceso /registro /recuperar`). Sitemap
+>   only lists populated sectors/provinces/municipios (≥1 `approved` company),
+>   mirroring the runtime 404 guard.
+> - **9.3** axe (`@axe-core/playwright`, tags wcag2a/2aa/21a/21aa) over 8 public
+>   routes × 2 viewports in `e2e/accessibility.spec.ts`. Fixes: `text-gray-500`
+>   → `text-gray-600` on light backgrounds (contrast 4.48→≥4.5) across footer,
+>   subtitles, empty states; nav aria-labels moved to `es.ts`
+>   (`navLabel`/`navLabelMobile`).
+> - **9.4** images served through Supabase CDN transform params
+>   (`applyMediaTransform` + `mediaPublicUrl`, pure helpers in
+>   `src/lib/public/queries.ts`) and storage `<img>` → `next/image`
+>   (CompanyCard, ficha logo+galería, portal thumbnails); `next.config.ts`
+>   adds `formats: ['image/avif','image/webp']`. ISR: `revalidate = 300` +
+>   `generateStaticParams` (safeQuery → `[]` when DB unreachable, keeping the
+>   route on-demand) on home, `sectores/[slug]`, `p/[provincia]`,
+>   `p/[provincia]/[municipio]`. Lighthouse ≥90 is enforced as a CI budget
+>   check in `e2e/perf.spec.ts` (LCP ≤3.5s, CLS ≤0.1).
+> - **Quality gates**: 446 unit tests / 52 files, branches 90.8% (threshold
+>   90), typecheck/lint/format clean, `npm run build` OK, e2e 60/60
+>   (seo + accessibility + perf new specs; `test:db` requires psql → CI only).

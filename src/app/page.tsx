@@ -1,6 +1,9 @@
 import Link from 'next/link';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { CompanyCard } from '@/components/public/CompanyCard';
 import { Button } from '@/components/ui/Button';
+import { seoMetadata } from '@/lib/seo/meta';
+import { organizationJsonLd, websiteJsonLd } from '@/lib/seo/json-ld';
 import {
   getFeaturedCompanies,
   getHomeStats,
@@ -11,7 +14,13 @@ import {
 import { getPublicClient } from '@/lib/supabase/public';
 import { es } from '@/locales/es';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
+
+export const metadata = seoMetadata({
+  title: `${es.brand.name} — ${es.brand.tagline}`,
+  description: es.footer.description,
+  path: '/',
+});
 
 const EMPTY_STATS: HomeStats = {
   companies: 0,
@@ -39,7 +48,9 @@ export default async function HomePage() {
   ];
 
   return (
-    <main>
+    <div>
+      <JsonLd data={organizationJsonLd()} />
+      <JsonLd data={websiteJsonLd()} />
       {/* Hero oscuro (design-spec §6): H1 72px/800 en dos líneas */}
       <section className="bg-ink-deep py-20 text-center text-white md:py-28">
         <div className="mx-auto max-w-4xl px-6">
@@ -67,7 +78,7 @@ export default async function HomePage() {
 
       {/* Banda de estadísticas */}
       <section aria-labelledby="home-stats" className="mx-auto max-w-7xl px-6 py-12">
-        <h2 id="home-stats" className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+        <h2 id="home-stats" className="text-sm font-semibold uppercase tracking-wide text-gray-600">
           {es.home.statsTitle}
         </h2>
         <dl className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
@@ -86,7 +97,7 @@ export default async function HomePage() {
           {es.home.sectorsTitle}
         </h2>
         {sectors.length === 0 ? (
-          <p className="mt-3 text-sm text-gray-500">{es.common.empty}</p>
+          <p className="mt-3 text-sm text-gray-600">{es.common.empty}</p>
         ) : (
           <ul className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {sectors.slice(0, 10).map((sector) => (
@@ -151,6 +162,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }
