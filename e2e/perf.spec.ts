@@ -6,6 +6,7 @@ import { expect, test } from '@playwright/test';
  * the core web vitals instead). Budgets are coarse — LCP ≤3.5s and CLS ≤0.1 —
  * and run on the two busiest public routes.
  */
+test.describe.configure({ mode: 'serial' });
 test.describe('performance budget (H9)', () => {
   const routes = ['/', '/empresas'];
 
