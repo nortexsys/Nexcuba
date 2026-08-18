@@ -65,6 +65,17 @@ export function validateImage(bytes: Uint8Array): UploadValidation {
   return validate(bytes, detectImageMime, IMAGE_LIMITS, 'archivo de imagen');
 }
 
+const EXT_BY_MIME: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+};
+
+/** Storage-file extension for a validated image mime (defaults to jpg). */
+export function extensionForMime(mime: string): string {
+  return EXT_BY_MIME[mime] ?? 'jpg';
+}
+
 export function validateVerificationDocument(bytes: Uint8Array): UploadValidation {
   return validate(bytes, detectDocumentMime, DOCUMENT_LIMITS, 'documento de acreditación');
 }

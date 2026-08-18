@@ -52,10 +52,10 @@ scaffolding. Do not skip ahead.
 
 ## H6 · Company portal
 
-- [ ] 6.1 Portal layout with 8-section nav + dashboard (completeness indicator, counts per content type, pending networking) — TDD on completeness calculator
-- [ ] 6.2 Mi empresa: profile editor (all ficha fields), gallery manager (≤8 images, limits), immediate public reflection — TDD
-- [ ] 6.3 Content CRUD ×4: create/edit/delete forms per `content-publishing` fields (coverage for services, status/needs for projects, type for opportunities), tags input, image upload with limits — TDD incl. FREE-foreign rejection
-- [ ] 6.4 Configuración: email change flow entry point, password change — links to 3.5 services
+- [x] 6.1 Portal layout with 8-section nav + dashboard (completeness indicator, counts per content type, pending networking) — TDD on completeness calculator
+- [x] 6.2 Mi empresa: profile editor (all ficha fields), gallery manager (≤8 images, limits), immediate public reflection — TDD
+- [x] 6.3 Content CRUD ×4: create/edit/delete forms per `content-publishing` fields (coverage for services, status/needs for projects, type for opportunities), tags input, image upload with limits — TDD incl. FREE-foreign rejection
+- [x] 6.4 Configuración: email change flow entry point, password change — links to 3.5 services
 
 ## H7 · Search
 
@@ -145,3 +145,32 @@ scaffolding. Do not skip ahead.
 > - **PENDIENTE CRÍTICO**: the real Supabase project still has NO migrations
 >   applied (schema cache empty) — home/directory render empty against it.
 >   Apply 0001–0009 via SQL editor or `supabase db push` before any demo.
+
+> **H6 build notes (2026-08-18).** Portal of the company (8-section nav):
+> - **Migration 0010** (`portal_polish`): `companies.municipality_id` now
+>   references municipalities with a composite FK on province (municipio must
+>   belong to the province); `own_can_publish()` helper used by content RLS;
+>   completeness recompute trigger on company save; `company_sectors` PK
+>   (company_id, sector_id); `profiles` portal scoping. Verified 65/65 SQL
+>   assertions in `tests/db/portal.test.sql`.
+> - **Modules** in `src/lib/server/portal/`: `dashboard.ts` (completeness +
+>   counts, counting failures degrade to zeros — the dashboard always renders),
+>   `profile.ts` (ficha fields, non-privileged columns only, sector replace,
+>   FK violation mapped to «El municipio no pertenece a la provincia.»),
+>   `gallery.ts` (≤8 images, magic-bytes validation, rollback of orphan
+>   storage objects), `content.ts` (CRUD ×4 types, free tags get-or-create,
+>   per-item images ≤8, Premium pre-check with friendly CTA — RLS stays the
+>   real wall). All mutations return typed `{ok, message}`.
+> - **UI** 100% Spanish via `src/locales/es.ts`; portal pages under
+>   `src/app/portal/**`; shared `PortalContentSection` in `_shared`.
+> - **Configuración (6.4)** links to the existing 3.5 services (email change +
+>   password reset) — no new auth logic.
+> - **Contactos (8.1)**: the portal contact section renders a placeholder
+>   "the request form ships with H8" state gated by `computeNetworkingRight`.
+> - **Quality gates**: 361 unit tests / 45 files, branches 90.25% (threshold
+>   90), typecheck/lint/format clean, `npm run build` OK, e2e 26/26. The
+>   `makeSupabaseClient` test mock gained per-operation storage errors
+>   (`StorageErrors` third arg) and `insertError/updateError/deleteError`
+>   overrides to exercise the defensive branches.
+> - **Known (same as H5)**: real Supabase project has no migrations applied
+>   yet — apply 0001–0010 before any demo.

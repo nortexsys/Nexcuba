@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
+import { PortalNav } from '@/components/portal/PortalNav';
 import { signOutAction } from '@/app/actions/auth';
 import { getServerClient } from '@/lib/supabase/server';
 import { es } from '@/locales/es';
@@ -64,6 +65,7 @@ export default async function PortalLayout({ children }: { children: ReactNode }
             </Button>
           </form>
         </div>
+        <PortalNav />
       </header>
       <main className="mx-auto max-w-7xl px-6 py-8">{children}</main>
     </div>

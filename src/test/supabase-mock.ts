@@ -16,8 +16,19 @@ export interface TableSpec {
   error?: { message: string; code?: string } | null;
   /** Error only for mutations (insert/update/delete/upsert); reads succeed. */
   mutationError?: { message: string; code?: string } | null;
+  /** Per-operation overrides (fall back to mutationError, then error). */
+  insertError?: { message: string; code?: string } | null;
+  updateError?: { message: string; code?: string } | null;
+  deleteError?: { message: string; code?: string } | null;
   /** `count` returned for head-count queries ({ count: 'exact' }). */
   count?: number;
+}
+
+export interface StorageErrors {
+  /** Forced error for storage.upload() in every bucket. */
+  uploadError?: { message: string; code?: string } | null;
+  /** Forced error for storage.remove() in every bucket. */
+  removeError?: { message: string; code?: string } | null;
 }
 
 export interface MockCalls {
@@ -27,12 +38,17 @@ export interface MockCalls {
   eqFilters: Record<string, Record<string, unknown>[]>;
   orFilters: Record<string, string[]>;
   selectColumns: Record<string, unknown[]>;
+  /** Storage uploads keyed by bucket: {path, body, options}. */
+  storageUploads: Record<string, { path: string; body: unknown; options?: unknown }[]>;
+  /** Storage object removals keyed by bucket. */
+  storageRemovals: Record<string, string[][]>;
   rpc: ReturnType<typeof vi.fn>;
 }
 
 export function makeSupabaseClient(
   tables: Record<string, TableSpec> = {},
   rpcResults: Record<string, unknown> = {},
+  storageErrors: StorageErrors = {},
 ): { client: SupabaseClient; calls: MockCalls } {
   const calls: MockCalls = {
     inserts: {},
@@ -41,6 +57,8 @@ export function makeSupabaseClient(
     eqFilters: {},
     orFilters: {},
     selectColumns: {},
+    storageUploads: {},
+    storageRemovals: {},
     rpc: vi.fn(),
   };
 
@@ -48,6 +66,9 @@ export function makeSupabaseClient(
     const spec = tables[table] ?? {};
     const error = spec.error ?? null;
     const mutationError = spec.mutationError ?? error;
+    const insertError = spec.insertError ?? mutationError;
+    const updateError = spec.updateError ?? mutationError;
+    const deleteError = spec.deleteError ?? mutationError;
     const listResult = {
       data: error ? null : (spec.rows ?? []),
       error,
@@ -83,7 +104,7 @@ export function makeSupabaseClient(
 
     chain.insert = vi.fn((row: Record<string, unknown>) => {
       (calls.inserts[table] ??= []).push(row);
-      const inserted = Promise.resolve({ data: { id: `${table}-gen-1` }, error: mutationError });
+      const inserted = Promise.resolve({ data: { id: `${table}-gen-1` }, error: insertError });
       return {
         select: () => ({ single: () => inserted }),
         then: <T, R>(
@@ -93,13 +114,16 @@ export function makeSupabaseClient(
       };
     });
 
-    const mutationResult = () => ({ data: mutationError ? null : {}, error: mutationError });
+    const mutationResult = (err: { message: string; code?: string } | null) => ({
+      data: err ? null : {},
+      error: err,
+    });
     chain.update = vi.fn((patch: Record<string, unknown>) => {
       (calls.updates[table] ??= []).push(patch);
       return {
         eq: vi.fn((column: string, value: unknown) => {
           (calls.eqFilters[table] ??= []).push({ column, value, update: true });
-          return Promise.resolve(mutationResult());
+          return Promise.resolve(mutationResult(updateError));
         }),
         select: () => chain,
       };
@@ -109,7 +133,7 @@ export function makeSupabaseClient(
       eq: vi.fn((column: string, value: unknown) => {
         (calls.deletes[table] ??= []).push(String(value));
         (calls.eqFilters[table] ??= []).push({ column, value, delete: true });
-        return Promise.resolve(mutationResult());
+        return Promise.resolve(mutationResult(deleteError));
       }),
     }));
 
@@ -120,7 +144,11 @@ export function makeSupabaseClient(
         then: <T, R>(
           onFulfilled?: ((value: T) => R | PromiseLike<R>) | null,
           onRejected?: ((reason: unknown) => R | PromiseLike<R>) | null,
-        ) => Promise.resolve(mutationResult()).then(onFulfilled as never, onRejected as never),
+        ) =>
+          Promise.resolve(mutationResult(insertError)).then(
+            onFulfilled as never,
+            onRejected as never,
+          ),
       };
     });
 
@@ -134,6 +162,16 @@ export function makeSupabaseClient(
     ),
     storage: {
       from: vi.fn((bucket: string) => ({
+        upload: vi.fn(async (path: string, body: unknown, options?: unknown) => {
+          (calls.storageUploads[bucket] ??= []).push({ path, body, options });
+          if (storageErrors.uploadError) return { data: null, error: storageErrors.uploadError };
+          return { data: { path }, error: null };
+        }),
+        remove: vi.fn(async (paths: string[]) => {
+          (calls.storageRemovals[bucket] ??= []).push(paths);
+          if (storageErrors.removeError) return { data: null, error: storageErrors.removeError };
+          return { data: {}, error: null };
+        }),
         createSignedUrl: vi.fn(async (path: string, ttl: number) => ({
           data: { signedUrl: `https://signed.example/${bucket}/${path}?ttl=${ttl}` },
           error: null,
