@@ -77,4 +77,35 @@ describe('sendEmail (Resend REST — dependency D-2)', () => {
     expect(body.html).toContain('MiDigital SRL');
     expect(body.to).toBe('dest@example.com');
   });
+
+  it('sendContactRequestEmail composes the networking notification', async () => {
+    fetchMock.mockResolvedValueOnce({ ok: true, status: 200 });
+    const { sendContactRequestEmail } = await import('@/lib/server/email');
+    const result = await sendContactRequestEmail('target@example.com', {
+      requesterName: 'Café Habana',
+      subject: 'Colaboración',
+      message: 'Hola',
+      targetName: 'MiHotel SRL',
+    });
+    expect(result.sent).toBe(true);
+    const body = sentBodyOf(fetchMock.mock.calls[0]);
+    expect(body.to).toBe('target@example.com');
+    expect(body.subject).toBe('Nueva solicitud de contacto: Colaboración');
+    expect(body.html).toContain('Café Habana');
+    expect(body.html).toContain('MiHotel SRL');
+  });
+
+  it('sendContactRequestAcceptedEmail composes the acceptance notification', async () => {
+    fetchMock.mockResolvedValueOnce({ ok: true, status: 200 });
+    const { sendContactRequestAcceptedEmail } = await import('@/lib/server/email');
+    const result = await sendContactRequestAcceptedEmail('requester@example.com', {
+      requesterName: 'Café Habana',
+      targetName: 'MiHotel SRL',
+    });
+    expect(result.sent).toBe(true);
+    const body = sentBodyOf(fetchMock.mock.calls[0]);
+    expect(body.to).toBe('requester@example.com');
+    expect(body.subject).toBe('Solicitud de contacto aceptada por MiHotel SRL');
+    expect(body.html).toContain('ha aceptado tu solicitud');
+  });
 });

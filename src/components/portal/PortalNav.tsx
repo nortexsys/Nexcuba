@@ -41,13 +41,18 @@ const sections: { href: string; label: string; match: SectionMatch }[] = [
     match: (p: string) => p.startsWith('/portal/contactos'),
   },
   {
+    href: '/portal/notificaciones',
+    label: nav.notifications,
+    match: (p: string) => p.startsWith('/portal/notificaciones'),
+  },
+  {
     href: '/portal/configuracion',
     label: nav.settings,
     match: (p: string) => p.startsWith('/portal/configuracion'),
   },
 ];
 
-/** Portal section navigation — the eight areas of the company area (task 6.1). */
+/** Portal section navigation — the nine areas of the company area (task 6.1, H8). */
 export function PortalNav({ currentPath }: { currentPath?: string }) {
   const pathname = usePathname();
   const current = currentPath ?? pathname ?? '';

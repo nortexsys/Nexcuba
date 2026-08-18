@@ -21,7 +21,7 @@ export interface TableSpec {
   updateError?: { message: string; code?: string } | null;
   deleteError?: { message: string; code?: string } | null;
   /** `count` returned for head-count queries ({ count: 'exact' }). */
-  count?: number;
+  count?: number | null;
 }
 
 export interface StorageErrors {
@@ -120,8 +120,13 @@ export function makeSupabaseClient(
     });
     chain.update = vi.fn((patch: Record<string, unknown>) => {
       (calls.updates[table] ??= []).push(patch);
+      const eq = vi.fn((column: string, value: unknown) => {
+        (calls.eqFilters[table] ??= []).push({ column, value, update: true });
+        return Promise.resolve(mutationResult(updateError));
+      });
       return {
-        eq: vi.fn((column: string, value: unknown) => {
+        eq,
+        is: vi.fn((column: string, value: unknown) => {
           (calls.eqFilters[table] ??= []).push({ column, value, update: true });
           return Promise.resolve(mutationResult(updateError));
         }),

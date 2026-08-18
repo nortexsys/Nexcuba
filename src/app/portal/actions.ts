@@ -14,6 +14,8 @@ import {
   type PortalContentType,
 } from '@/lib/server/portal/content';
 import { addOwnGalleryImage, removeOwnGalleryImage } from '@/lib/server/portal/gallery';
+import { acceptContactRequest, sendContactRequest } from '@/lib/server/portal/networking';
+import { markNotificationsRead } from '@/lib/server/portal/notifications';
 import { setOwnSectors, updateOwnProfile } from '@/lib/server/portal/profile';
 import { getServerClient } from '@/lib/supabase/server';
 import { es } from '@/locales/es';
@@ -269,6 +271,63 @@ export async function requestEmailChangeAction(
     console.error('[requestEmailChangeAction]', error);
     return { status: 'error', message: es.common.error };
   }
+}
+
+// ── Networking (H8, spec networking 8.1–8.2) ─────────────────────────────────
+
+export async function sendContactRequestAction(
+  _prev: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const companyId = await requireCompanyId();
+  if (!companyId) return NO_SESSION;
+
+  const supabase = await getServerClient();
+  const result = await sendContactRequest(
+    { client: supabase, companyId },
+    {
+      targetSlug: String(formData.get('targetSlug') ?? ''),
+      subject: String(formData.get('subject') ?? ''),
+      message: String(formData.get('message') ?? ''),
+    },
+  );
+  if (!result.ok) return { status: 'error', message: result.message };
+
+  revalidatePath('/portal/contactos');
+  revalidatePath('/portal');
+  return { status: 'success', message: es.auth.portal.networking.requestSent };
+}
+
+export async function acceptContactRequestAction(
+  _prev: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const companyId = await requireCompanyId();
+  if (!companyId) return NO_SESSION;
+
+  const requestId = String(formData.get('requestId') ?? '').trim();
+  if (requestId === '') return NO_SESSION;
+
+  const supabase = await getServerClient();
+  const result = await acceptContactRequest({ client: supabase, companyId }, { requestId });
+  if (!result.ok) return { status: 'error', message: result.message };
+
+  revalidatePath('/portal/contactos');
+  revalidatePath('/portal');
+  return { status: 'success', message: es.auth.portal.networking.requestAccepted };
+}
+
+export async function markNotificationsReadAction(): Promise<AdminActionState> {
+  const companyId = await requireCompanyId();
+  if (!companyId) return NO_SESSION;
+
+  const supabase = await getServerClient();
+  const result = await markNotificationsRead(supabase);
+  if (!result.ok) return { status: 'error', message: result.message };
+
+  revalidatePath('/portal/notificaciones');
+  revalidatePath('/portal');
+  return { status: 'success' };
 }
 
 export async function changePasswordAction(

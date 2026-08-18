@@ -15,7 +15,9 @@ test.describe('auth guards (H3/H4)', () => {
   });
 
   test('portal URLs redirect anonymous visitors to /acceso', async ({ page }) => {
-    await page.goto('/portal');
-    await expect(page).toHaveURL(/\/acceso$/);
+    for (const path of ['/portal', '/portal/notificaciones', '/portal/contactos']) {
+      await page.goto(path);
+      await expect(page).toHaveURL(/\/acceso$/);
+    }
   });
 });

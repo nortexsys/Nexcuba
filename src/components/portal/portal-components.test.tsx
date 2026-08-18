@@ -6,6 +6,9 @@ import { ProfileForm } from '@/components/portal/ProfileForm';
 import { GalleryManager } from '@/components/portal/GalleryManager';
 import { ContentManager } from '@/components/portal/ContentManager';
 import { EmailChangeForm, PasswordForm } from '@/components/portal/AccountForms';
+import { AcceptContactRequestButton } from '@/components/portal/AcceptContactRequestButton';
+import { ContactRequestForm } from '@/components/portal/ContactRequestForm';
+import { MarkNotificationsRead } from '@/components/portal/MarkNotificationsRead';
 import { initialAdminActionState, type AdminActionState } from '@/lib/admin/form';
 import { es } from '@/locales/es';
 
@@ -16,11 +19,11 @@ const idleAction: Action = async () => initialAdminActionState;
 const c = es.auth.portal;
 
 describe('PortalNav (6.1)', () => {
-  it('exposes the eight portal sections with Spanish routes', () => {
+  it('exposes the nine portal sections with Spanish routes', () => {
     render(<PortalNav />);
     const nav = screen.getByRole('navigation', { name: es.auth.portal.title });
     const entries = Object.entries(c.nav);
-    expect(entries).toHaveLength(8);
+    expect(entries).toHaveLength(9);
     for (const [, label] of entries) {
       expect(nav).toContainElement(screen.getByRole('link', { name: label }));
     }
@@ -243,6 +246,66 @@ describe('ContentManager (6.3)', () => {
     await user.click(screen.getByRole('button', { name: c.content.delete }));
     expect(confirmSpy).toHaveBeenCalledWith(c.content.confirmDelete);
     expect(deleteAction).not.toHaveBeenCalled();
+  });
+});
+
+describe('ContactRequestForm (8.1)', () => {
+  it('submits subject, message and the hidden target slug', async () => {
+    const user = userEvent.setup();
+    const action = vi.fn(async (_s: AdminActionState, formData: FormData) => {
+      expect(formData.get('targetSlug')).toBe('mihotel');
+      expect(formData.get('subject')).toBe('Colaboración');
+      expect(formData.get('message')).toBe('Hola, queremos colaborar.');
+      return { status: 'success', message: es.auth.portal.networking.requestSent };
+    }) as unknown as Action;
+    render(<ContactRequestForm action={action} targetSlug="mihotel" />);
+
+    await user.type(screen.getByLabelText(c.networking.subject), 'Colaboración');
+    await user.type(screen.getByLabelText(c.networking.message), 'Hola, queremos colaborar.');
+    await user.click(screen.getByRole('button', { name: c.networking.send }));
+    expect(action).toHaveBeenCalledTimes(1);
+    expect(await screen.findByText(es.auth.portal.networking.requestSent)).toBeInTheDocument();
+  });
+
+  it('shows the action error message', async () => {
+    const user = userEvent.setup();
+    const action = vi.fn(async () => ({
+      status: 'error',
+      message: 'Ya tienes una solicitud pendiente hacia esta empresa.',
+    })) as unknown as Action;
+    render(<ContactRequestForm action={action} targetSlug="mihotel" />);
+    await user.click(screen.getByRole('button', { name: c.networking.send }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Ya tienes una solicitud pendiente hacia esta empresa.',
+    );
+  });
+});
+
+describe('AcceptContactRequestButton (8.2)', () => {
+  it('submits the hidden request id', async () => {
+    const user = userEvent.setup();
+    const action = vi.fn(async (_s: AdminActionState, formData: FormData) => {
+      expect(formData.get('requestId')).toBe('req-1');
+      return { status: 'success', message: 'Solicitud de contacto aceptada.' };
+    }) as unknown as Action;
+    render(<AcceptContactRequestButton action={action} requestId="req-1" />);
+    await user.click(screen.getByRole('button', { name: c.networking.accept }));
+    expect(action).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('MarkNotificationsRead (8.3)', () => {
+  it('invokes the action and reflects the disabled state', async () => {
+    const user = userEvent.setup();
+    const action = vi.fn(async () => ({
+      status: 'success',
+    })) as unknown as () => Promise<AdminActionState>;
+    const { rerender } = render(<MarkNotificationsRead action={action} disabled={false} />);
+    await user.click(screen.getByRole('button', { name: c.notifications.markAllRead }));
+    expect(action).toHaveBeenCalledTimes(1);
+
+    rerender(<MarkNotificationsRead action={action} disabled={true} />);
+    expect(screen.getByRole('button', { name: c.notifications.markAllRead })).toBeDisabled();
   });
 });
 

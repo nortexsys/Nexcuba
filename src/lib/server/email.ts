@@ -1,4 +1,10 @@
-import { approvalEmail } from '@/lib/email/templates';
+import {
+  approvalEmail,
+  contactRequestAcceptedEmail,
+  contactRequestEmail,
+  type ContactRequestAcceptedEmailData,
+  type ContactRequestEmailData,
+} from '@/lib/email/templates';
 
 /**
  * Transactional email via the Resend REST API (dependency D-2). Optional by
@@ -48,5 +54,23 @@ export async function sendEmail(params: {
 /** Approval confirmation — best effort by contract (spec only demands the attempt). */
 export async function sendApprovalEmail(to: string, companyName: string): Promise<SendEmailResult> {
   const { subject, html } = approvalEmail(companyName);
+  return sendEmail({ to, subject, html });
+}
+
+/** New contact request — best effort by contract (spec networking §8.1). */
+export async function sendContactRequestEmail(
+  to: string,
+  data: ContactRequestEmailData,
+): Promise<SendEmailResult> {
+  const { subject, html } = contactRequestEmail(data);
+  return sendEmail({ to, subject, html });
+}
+
+/** Request accepted — best effort by contract (spec networking §8.2). */
+export async function sendContactRequestAcceptedEmail(
+  to: string,
+  data: ContactRequestAcceptedEmailData,
+): Promise<SendEmailResult> {
+  const { subject, html } = contactRequestAcceptedEmail(data);
   return sendEmail({ to, subject, html });
 }

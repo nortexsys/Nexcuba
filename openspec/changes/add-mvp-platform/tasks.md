@@ -65,9 +65,9 @@ scaffolding. Do not skip ahead.
 
 ## H8 · Networking
 
-- [ ] 8.1 Contact request: server action (subject+message, RLS with-check on requester right), pending state, duplicate-pending guard — TDD
-- [ ] 8.2 Accept flow: accept action (target-only), contact lists on both sides, accepted notification + emails both moments — TDD
-- [ ] 8.3 Notifications: in-app bell/inbox (`notifications` table, read state) — TDD + E2E
+- [x] 8.1 Contact request: server action (subject+message, RLS with-check on requester right), pending state, duplicate-pending guard — TDD
+- [x] 8.2 Accept flow: accept action (target-only), contact lists on both sides, accepted notification + emails both moments — TDD
+- [x] 8.3 Notifications: in-app bell/inbox (`notifications` table, read state) — TDD + E2E
 
 ## H9 · SEO, a11y, performance
 
@@ -203,3 +203,29 @@ scaffolding. Do not skip ahead.
 > - **Quality gates**: 371 unit tests, branches 90.29% (threshold 90),
 >   typecheck/lint/format clean, `npm run build` OK, e2e 26/26 (shell search
 >   test now also asserts the results heading).
+
+> **H8 build notes (2026-08-18).** Networking + notifications milestone:
+> - **Migration 0012** (`networking_notifications`): `contact_requests`
+>   (id, requester_company_id/target_company_id FK companies, subject, message,
+>   status, created_at/accepted_at, unique pending-per-direction index) + RLS
+>   that enforces the networking right (`own_can_network()`), guards duplicate
+>   pending requests (unique index as backstop), lets the requester insert
+>   pending and the target only accept; `notifications` insert trigger
+>   `notify_contact_request` (SECURITY DEFINER) on both request + accept.
+>   SQL suite: 65 asserts in `tests/db/networking.test.sql` — total DB suite
+>   98 tests green.
+> - **8.1 send**: `sendContactRequest` in
+>   `src/lib/server/portal/networking.ts` (subject ≤120, message ≤2000,
+>   duplicate-pending guard, in-app via trigger + best-effort email); action
+>   `sendContactRequestAction` + `ContactRequestForm` (asunto+mensaje), page
+>   `/portal/contactos` renders the form only with `?empresa=slug`.
+> - **8.2 accept**: `acceptContactRequest` (target-only, `ownCompanyName`
+>   helper derives target name for the email), `AcceptContactRequestButton`,
+>   `listContactInbox` groups received/sent/established with company links;
+>   both sides appear in lists with `/empresas/[slug]` links.
+> - **8.3 notifications**: `notifications.ts` lib (`listNotifications`,
+>   `countUnreadNotifications`, `markNotificationsRead`), `/portal/notificaciones`
+>   page, bell with unread badge in `src/app/portal/layout.tsx`.
+> - **Quality gates**: 405 unit tests / 48 files, branches 90.49% (threshold
+>   90), typecheck/lint/format clean, `npm run build` OK, e2e 26/26 (auth-guards
+>   now iterates `/portal`, `/portal/notificaciones`, `/portal/contactos`).

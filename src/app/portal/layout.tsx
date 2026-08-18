@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 import { PortalNav } from '@/components/portal/PortalNav';
 import { signOutAction } from '@/app/actions/auth';
+import { countUnreadNotifications } from '@/lib/server/portal/notifications';
 import { getServerClient } from '@/lib/supabase/server';
 import { es } from '@/locales/es';
 
@@ -51,6 +52,8 @@ export default async function PortalLayout({ children }: { children: ReactNode }
     );
   }
 
+  const unread = await countUnreadNotifications(supabase);
+
   return (
     <div className="min-h-screen bg-cream-50">
       <header className="sticky top-16 border-b border-gray-200 bg-white">
@@ -59,11 +62,38 @@ export default async function PortalLayout({ children }: { children: ReactNode }
             <Image src="/logo.png" alt="" width={24} height={24} className="rounded-md" />
             <span className="text-base font-bold text-ink">{es.auth.portal.title}</span>
           </Link>
-          <form action={signOutAction}>
-            <Button type="submit" variant="ghost">
-              {es.auth.portal.signOut}
-            </Button>
-          </form>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/portal/notificaciones"
+              aria-label={es.auth.portal.notifications.title}
+              className="relative rounded-full p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-ink"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                aria-hidden="true"
+                className="h-5 w-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                />
+              </svg>
+              {unread > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold leading-none text-white">
+                  {unread > 9 ? '9+' : unread}
+                </span>
+              )}
+            </Link>
+            <form action={signOutAction}>
+              <Button type="submit" variant="ghost">
+                {es.auth.portal.signOut}
+              </Button>
+            </form>
+          </div>
         </div>
         <PortalNav />
       </header>
