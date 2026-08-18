@@ -32,11 +32,12 @@ const EMPTY_STATS: HomeStats = {
 
 /** Home (task 5.1): dark hero, stats band, sectors, featured, how-it-works, CTA. */
 export default async function HomePage() {
-  const client = getPublicClient();
+  // getPublicClient() throws without env; it must stay inside each safeQuery
+  // so the static build (and CI) can prerender the home page in degraded mode.
   const [stats, sectors, featured] = await Promise.all([
-    safeQuery(() => getHomeStats(client), EMPTY_STATS),
-    safeQuery(() => listActiveSectors(client), []),
-    safeQuery(() => getFeaturedCompanies(client), []),
+    safeQuery(() => getHomeStats(getPublicClient()), EMPTY_STATS),
+    safeQuery(() => listActiveSectors(getPublicClient()), []),
+    safeQuery(() => getFeaturedCompanies(getPublicClient()), []),
   ]);
 
   const statCards = [
