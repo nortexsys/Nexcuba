@@ -26,5 +26,6 @@ export async function getServerClient(): Promise<SupabaseClient> {
         }
       },
     },
+    db: { retry: false },
   });
 }

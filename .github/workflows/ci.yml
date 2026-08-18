@@ -70,9 +70,13 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      # No NEXT_PUBLIC_SUPABASE_* here: with a config set, the middleware
-      # performs a real supabase.auth.getUser() per request (retries/backoff on
-      # an unreachable URL), which tanks server response time and the perf
-      # budgets. Without it, safeQuery degrades instantly and pages render fast.
+      # Dummy-but-valid env: pages that build a Supabase client (registro,
+      # auth pages) need a URL that passes getPublicEnv; a dead address makes
+      # every query fail fast (ECONNREFUSED) so safeQuery degrades quickly and
+      # perf budgets hold. The middleware skips the auth round-trip for
+      # anonymous requests (no sb- cookie), keeping public TTFB low.
       - name: E2E (chromium)
         run: npx playwright test --project=chromium
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:9
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key

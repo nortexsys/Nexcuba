@@ -15,10 +15,26 @@ export async function middleware(request: NextRequest) {
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anonKey) return response; // no Supabase config (CI): skip refresh
 
+  const cookies = request.cookies.getAll();
+
+  // Anonymous requests carry no session cookie; skip the network call so
+  // public pages (and perf budgets) don't wait on a Supabase auth round-trip.
+  const sessionCookie = cookies.find(({ name }) => name.startsWith('sb-'));
+  if (!sessionCookie) {
+    const target = resolveRouteGuard(request.nextUrl.pathname, false);
+    if (target) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = target;
+      redirectUrl.search = '';
+      return NextResponse.redirect(redirectUrl);
+    }
+    return response;
+  }
+
   const supabase = createServerClient(url, anonKey, {
     cookies: {
       getAll() {
-        return request.cookies.getAll();
+        return cookies;
       },
       setAll(cookiesToSet) {
         for (const { name, value } of cookiesToSet) {

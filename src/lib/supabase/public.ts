@@ -28,6 +28,7 @@ export function getPublicClient(): SupabaseClient {
 
   cached = createClient(url, anonKey, {
     auth: { persistSession: false, autoRefreshToken: false },
+    db: { retry: false },
   });
   return cached;
 }
