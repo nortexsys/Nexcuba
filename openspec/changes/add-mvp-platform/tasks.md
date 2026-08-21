@@ -302,3 +302,15 @@ scaffolding. Do not skip ahead.
 >   clean, `npm run build` OK, e2e 60/60 with dead env. DB suite local:
 >   rls 41 · adversarial 24 · backoffice · networking · portal · search →
 >   122 passed, 0 failed.
+
+> **Deploy note (2026-08-21).** Migrations **0001–0012 pushed to the real
+> Supabase project `web-Nexcuba`** (`syvyvhciauniahbjopmk`, linked via
+> `supabase link`, `supabase db push`). The schema cache was empty before;
+> all tables now exist with the full RLS matrix. Verified via the anon REST
+> API: 16 provinces, 168 municipalities, 20 sectors, 30 categories seeded;
+> content/networking tables return empty for anonymous (RLS working);
+> `search_all` RPC callable by anon. Storage policies for the `media` and
+> `verification-docs` buckets were created conditionally (migration 0007).
+> `pg_cron` not installed on managed Supabase — `sweep_expired_premium()`
+> remains available for manual runs (documented behavior). The previous
+> "PENDIENTE CRÍTICO — real project has no migrations" notes are resolved.

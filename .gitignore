@@ -8,6 +8,7 @@ docs/
 *.pem
 *.key
 secrets/
+supabase/.temp/
 
 # Documentos binarios de trabajo local (el .md es la fuente canónica).
 *.docx
